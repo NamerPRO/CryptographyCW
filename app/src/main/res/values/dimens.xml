@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="toolbar_text_size">22dp</dimen>
+    <dimen name="toolbar_text_padding">15dp</dimen>
+    <dimen name="toolbar_text_margin">15dp</dimen>
+    <dimen name="chat_text_margin">10dp</dimen>
+    <dimen name="chat_item_image_size">50dp</dimen>
+    <dimen name="chat_item_title_text_size">15sp</dimen>
+    <dimen name="chat_item_join_text_size">12sp</dimen>
+    <dimen name="clickable_arrow_place_size">50dp</dimen>
+    <dimen name="clickable_arrow_place_size_negative">-42dp</dimen>
+    <dimen name="clickable_arrow_size">35dp</dimen>
+    <dimen name="standard_title_size">25dp</dimen>
+    <dimen name="standard_text_size">15dp</dimen>
+</resources>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="@dimen/toolbar_text_padding">
+
+        <TextView
+            android:layout_marginStart="@dimen/toolbar_text_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_chat_title"
+            style="@style/TextStyleToolbar"/>
+
+    </FrameLayout>
+
+    <ImageView
+        android:layout_marginTop="20dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_no_chat_icon"/>
+
+    <TextView
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/create_chat_fill_chat_name"
+        style="@style/StandardText"/>
+
+    <EditText
+        android:id="@+id/chat_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/create_chat_fill_chat_name_placeholder"
+        android:textCursorDrawable="@drawable/ic_app_cursor"
+        android:layout_marginStart="16dp"
+        android:paddingHorizontal="19dp"
+        android:layout_marginEnd="16dp"
+        android:maxLines="1"
+        android:inputType="text"
+        style="@style/NewChatEditTextInputAppearance"/>
+
+    <TextView
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/create_chat_fill_chat_cipher"
+        style="@style/StandardText"/>
+
+    <androidx.appcompat.widget.AppCompatSpinner
+        android:id="@+id/cipher_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:spinnerMode="dropdown"
+        android:overlapAnchor="false"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+        android:entries="@array/create_chat_cipher_modes"
+        android:padding="10dp"/>
+
+    <TextView
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/create_chat_select_chat_partner"
+        style="@style/StandardText"/>
+
+    <LinearLayout
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:weightSum="10"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/select_partner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="9"
+            android:spinnerMode="dropdown"
+            android:overlapAnchor="false"
+            android:entries="@array/loading_clients"
+            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:padding="10dp"/>
+
+        <TextView
+            android:id="@+id/refresh_partners"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            style="@style/StandardText"
+            android:textAlignment="center"
+            android:textSize="25sp"
+            android:text="@string/refresh_symbol"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:layout_width="0dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/create_chat"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="17dp"
+        android:layout_marginEnd="17dp"
+        android:layout_marginBottom="32dp"
+        android:enabled="false"
+        android:text="@string/create_chat_button"
+        style="@style/CreateChatButton"/>
+
+</LinearLayout>

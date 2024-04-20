@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextStyleToolbar">
+        <item name="android:fontFamily">@font/montserrat_bold</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/toolbar_text_size</item>
+    </style>
+
+    <style name="TextChatNameStyle">
+        <item name="android:fontFamily">@font/montserrat_light</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/chat_item_title_text_size</item>
+    </style>
+
+    <style name="TextChatTypeStyle">
+        <item name="android:fontFamily">@font/montserrat_light</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/chat_item_join_text_size</item>
+    </style>
+
+    <style name="StandardTitle">
+        <item name="android:fontFamily">@font/montserrat_bold</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/standard_title_size</item>
+    </style>
+
+    <style name="StandardText">
+        <item name="android:fontFamily">@font/montserrat_light</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/standard_text_size</item>
+    </style>
+
+    <style name="NewChatTextInputAppearance">
+        <item name="android:fontFamily">@font/montserrat_light</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:singleLine">true</item>
+        <item name="boxStrokeColor">@drawable/shape_edittext_focused</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">1dp</item>
+        <item name="boxBackgroundColor">@color/transparent</item>
+        <item name="boxBackgroundMode">outline</item>
+        <item name="hintAnimationEnabled">true</item>
+        <item name="colorSurface">@color/black</item>
+        <item name="hintTextColor">@color/black</item>
+    </style>
+
+    <style name="NewChatEditTextInputAppearance">
+        <item name="android:textSize">@dimen/standard_text_size</item>
+        <item name="android:fontFamily">@font/montserrat_light</item>
+        <item name="android:textColorHint">@color/light_gray</item>
+        <item name="colorSurface">@color/black</item>
+        <item name="hintTextColor">@color/gray</item>
+    </style>
+
+    <style name="CreateChatButton">
+        <item name="android:background">@drawable/shape_new_create_chat_button</item>
+        <item name="android:fontFamily">@font/montserrat_light</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="StandardLinkStyle" parent="StandardText">
+        <item name="android:textColor">@color/blue</item>
+        <item name="android:fontFamily">@font/montserrat_italic</item>
+    </style>
+</resources>

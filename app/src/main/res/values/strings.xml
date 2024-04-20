@@ -1,3 +1,51 @@
 <resources>
     <string name="app_name">NChat</string>
+    <string name="chat_list_title">Мои чаты</string>
+    <string name="chat_join_text">тип чата: секретный</string>
+    <string name="bottom_navigation_chat_menu">Мои чаты</string>
+    <string name="bottom_navigation_chat_create">Создать чат</string>
+    <string name="bottom_navigation_about">О приложении</string>
+    <string name="about_app_title">О приложении</string>
+    <string name="about_app_description">Приложение разработал студент 3его курса\nгруппы М8О-311Б-21\nАвдиянц Петр</string>
+    <string name="about_app_description_title">Курсовой проект</string>
+    <string name="create_chat_title">Создать чат</string>
+    <string name="create_chat_enter_title">Введите название чата</string>
+    <string name="create_chat_select_encryption">Выберите алгоритм шифрования</string>
+    <string name="create_chat_button">Создать чат</string>
+    <string name="create_chat_fill_chat_name">Укажите название чата:</string>
+    <string name="create_chat_fill_chat_name_placeholder">Например, \"Чат по криптографии\"…</string>
+    <string name="create_chat_fill_chat_cipher">Выберите алгоритм шифрования:</string>
+    <string name="create_chat_select_chat_partner">Выберите собеседника:</string>
+    <string-array name="create_chat_cipher_modes">
+        <item>RC5 (по умолчанию)</item>
+        <item>Magenta</item>
+    </string-array>
+    <string-array name="loading_clients">
+        <item>Клиенты загружаются…</item>
+    </string-array>
+    <string name="create_chat_cipher_modes_default">RC5 (по умолчанию)</string>
+    <string name="chat_enter_message_hint">Введите сообщение…</string>
+    <string name="chat_resource_download"><u>скачать</u></string>
+    <string name="no_clients_online">Нет клиентов в сети</string>
+    <string name="failed_to_get_clients">Ошибка получения клиентов</string>
+    <string name="refresh_symbol">⟳</string>
+    <string name="clients_updating">Список клиентов обновлен</string>
+    <string name="dialog_cancel_button">Отмена</string>
+    <string name="dialog_finish_button">Ок</string>
+    <string name="chat_creation_failed_title">Ошибка!</string>
+    <string name="chat_creation_failed_message">Не удается создать чат. Возможно, клиент, которого Вы выбрали уже не в сети. Попробуйте обновить список клиентов и повторите попытку.\n\nЭто также может произойти потому что сервер временно не доступен или возникли проблемы с интернетом…</string>
+    <string name="dialog_enter_input_button">Ввод</string>
+    <string name="enter_username_title">Введите имя на сессию</string>
+    <string name="enter_username_message">Укажите имя, под которым Вас будут видеть другие пользователи во время текущей сессии. Указывемое имя временное и закрепляется за Вами только до тех пор, пока Вы не остановили приложение, после чего это имя сможет занять любой другой пользователь.</string>
+    <string name="successful_initialization_title">Вы успешно авторизовались</string>
+    <string name="successful_initialization_message">Внимание!\nСоздавайте чат с пользователем только, если Вы уверены в том, что в данный момент его ник именно тот, который Вы выбрали. Помните, что он не фиксирован и может измениться в любой момент.</string>
+    <string name="client_initialization_failed">Не удалось выполнить инициализацию! Попробуйте еще раз.</string>
+    <string name="initialization_in_progress_title">Выполняется инициализация</string>
+    <string name="initialization_in_progress_message">Не покидайте приложение…</string>
+    <string name="waiting_for_partner_answer">Ожидаем ответа собеседника…</string>
+    <string name="failed_to_get_new_chats">Не удалось проверить наличие новых созданных чатов…</string>
+    <string name="failed_to_add_new_chat">Не удалось оповестить собеседника о создании с ним чата…</string>
+    <string name="failed_to_ping_new_chats">Не удалось получить информацию о созданных чатах. Мы попробуем это снова позже…</string>
+    <string name="failed_to_get_secret_keys">Не удалось обеспечить безопасную передачу данных. Мы попробуем это снова позже…</string>
+    <string name="name_not_available">Введенное Вами имя сейчас занято. Укажите другое или попробуйте позже…</string>
 </resources>

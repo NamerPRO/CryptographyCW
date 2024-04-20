@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="250dp"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:background="@drawable/shape_border_message_recieved"
+    android:layout_marginStart="20dp"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            style="@style/StandardText"
+            android:maxWidth="150dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_gravity="start"
+            tools:text="ГлавныйЭкран.xml"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/StandardText"
+            android:gravity="center_vertical"
+            android:layout_gravity="start"
+            android:layout_marginStart="10dp"
+            tools:text="(XML)"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_gravity="start"
+        style="@style/StandardLinkStyle"
+        android:text="@string/chat_resource_download"/>
+
+
+</LinearLayout>

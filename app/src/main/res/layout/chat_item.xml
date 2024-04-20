@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:paddingVertical="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:layout_width="@dimen/chat_item_image_size"
+        android:layout_height="@dimen/chat_item_image_size"
+        android:src="@drawable/ic_no_chat_icon"
+        android:layout_marginStart="8dp"
+        android:scaleType="centerCrop"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="@dimen/clickable_arrow_place_size">
+
+        <TextView
+            android:id="@+id/chat_name"
+            android:layout_marginStart="@dimen/chat_text_margin"
+            android:layout_marginTop="@dimen/chat_text_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Чат по криптографии"
+            style="@style/TextChatNameStyle"/>
+
+        <TextView
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="@dimen/chat_text_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/TextChatTypeStyle"
+            android:text="@string/chat_join_text"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_marginStart="@dimen/clickable_arrow_place_size_negative"
+        android:layout_width="@dimen/clickable_arrow_size"
+        android:layout_height="@dimen/clickable_arrow_size"
+        android:layout_gravity="center"
+        android:backgroundTint="@color/black"
+        android:src="@drawable/ic_clickable"/>
+
+</LinearLayout>
