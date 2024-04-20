@@ -1,6 +1,5 @@
 package ru.namerpro.nchat.domain.impl
 
-import kotlinx.coroutines.flow.Flow
 import ru.namerpro.nchat.domain.api.interactor.InitializedClientsInteractor
 import ru.namerpro.nchat.domain.api.repository.InitializedClientsRepository
 import ru.namerpro.nchat.domain.model.ClientModel

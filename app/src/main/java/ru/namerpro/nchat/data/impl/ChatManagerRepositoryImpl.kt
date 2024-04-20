@@ -1,6 +1,5 @@
 package ru.namerpro.nchat.data.impl
 
-import android.util.Log
 import ru.namerpro.nchat.commons.Constants.Companion.SUCCESS_RESPONSE_CODE
 import ru.namerpro.nchat.data.NetworkClient
 import ru.namerpro.nchat.data.dto.response.CreateChatResponse

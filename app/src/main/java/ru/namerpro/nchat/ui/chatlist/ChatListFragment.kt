@@ -7,9 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import ru.namerpro.nchat.databinding.FragmentChatListBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import ru.namerpro.nchat.domain.model.ChatModel
+import ru.namerpro.nchat.databinding.FragmentChatListBinding
 
 class ChatListFragment : Fragment() {
 

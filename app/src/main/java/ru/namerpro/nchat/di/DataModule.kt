@@ -1,7 +1,6 @@
 package ru.namerpro.nchat.di
 
 import com.google.gson.Gson
-import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -14,7 +13,6 @@ import ru.namerpro.nchat.data.network.RetrofitNetworkClient
 import ru.namerpro.nchat.domain.api.repository.ChatManagerRepository
 import ru.namerpro.nchat.domain.api.repository.InitializedClientsRepository
 import ru.namerpro.nchat.domain.api.repository.SecretKeyRepository
-import java.util.concurrent.TimeUnit
 
 val dataModule = module {
 

@@ -6,13 +6,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import ru.namerpro.nchat.R
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import ru.namerpro.nchat.R
 import ru.namerpro.nchat.commons.Constants
 import ru.namerpro.nchat.commons.showEditableDialog
 import ru.namerpro.nchat.commons.showUnclosableDialog
 import ru.namerpro.nchat.databinding.ActivityRootBinding
-import ru.namerpro.nchat.ui.createchat.ChatCreationState
 
 class RootActivity : AppCompatActivity() {
 
