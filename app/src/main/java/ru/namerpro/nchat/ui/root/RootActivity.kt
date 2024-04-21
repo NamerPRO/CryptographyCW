@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -42,11 +43,12 @@ class RootActivity : AppCompatActivity() {
 
         initializeClientIfNot()
 
-//        navController.addOnDestinationChangedListener { _, destination, _ ->
-//            when (destination.id) {
-//
-//            }
-//        }
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.chatFragment -> binding?.bottomNavigationView?.isVisible = false
+                else -> binding?.bottomNavigationView?.isVisible = true
+            }
+        }
     }
 
     private fun initializeClientIfNot() {

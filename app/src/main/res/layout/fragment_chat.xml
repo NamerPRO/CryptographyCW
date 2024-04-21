@@ -6,19 +6,28 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/toolbar_text_margin"
         android:paddingVertical="@dimen/toolbar_text_padding">
 
         <TextView
-            android:layout_marginStart="@dimen/toolbar_text_margin"
+            android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Чат по криптографии"
             style="@style/TextStyleToolbar"/>
 
-    </FrameLayout>
+        <TextView
+            android:id="@+id/partner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/StandardText"
+            tools:text="Собеседник: Иванов Иван"/>
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"

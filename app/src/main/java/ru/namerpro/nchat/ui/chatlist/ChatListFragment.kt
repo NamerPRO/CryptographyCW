@@ -6,9 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import ru.namerpro.nchat.R
 import ru.namerpro.nchat.databinding.FragmentChatListBinding
+import ru.namerpro.nchat.ui.chat.ChatFragment
 
 class ChatListFragment : Fragment() {
 
@@ -34,7 +37,10 @@ class ChatListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         chatListAdapter = ChatListAdapter(arrayListOf()) { chat ->
-            // some code here on click
+            findNavController().navigate(
+                R.id.action_chatListFragment_to_chatFragment2,
+                ChatFragment.createArgs(chat)
+            )
         }
 
         binding?.chatArea?.apply {

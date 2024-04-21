@@ -48,4 +48,6 @@
     <string name="failed_to_ping_new_chats">Не удалось получить информацию о созданных чатах. Мы попробуем это снова позже…</string>
     <string name="failed_to_get_secret_keys">Не удалось обеспечить безопасную передачу данных. Мы попробуем это снова позже…</string>
     <string name="name_not_available">Введенное Вами имя сейчас занято. Укажите другое или попробуйте позже…</string>
+    <string name="chat_partner">Собеседник: %1$s</string>
+    <string name="chat_partner_error">Не удалось получить!</string>
 </resources>

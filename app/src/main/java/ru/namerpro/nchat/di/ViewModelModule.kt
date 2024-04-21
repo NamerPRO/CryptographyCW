@@ -2,6 +2,7 @@ package ru.namerpro.nchat.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import ru.namerpro.nchat.ui.chat.ChatViewModel
 import ru.namerpro.nchat.ui.chatlist.ChatListViewModel
 import ru.namerpro.nchat.ui.createchat.CreateChatViewModel
 import ru.namerpro.nchat.ui.root.RootViewModel
@@ -25,6 +26,10 @@ val viewModelModule = module {
 
     viewModel {
         ChatListViewModel()
+    }
+
+    viewModel {
+        ChatViewModel()
     }
 
 }
