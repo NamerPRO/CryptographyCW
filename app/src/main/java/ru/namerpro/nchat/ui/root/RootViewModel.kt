@@ -1,16 +1,15 @@
 package ru.namerpro.nchat.ui.root
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.namerpro.nchat.commons.Constants
 import ru.namerpro.nchat.commons.Constants.Companion.DIFFIE_HELLMAN_CONSTANT_G
 import ru.namerpro.nchat.commons.Constants.Companion.DIFFIE_HELLMAN_CONSTANT_P
 import ru.namerpro.nchat.commons.Constants.Companion.FIELD_NOT_INITIALIZED
+import ru.namerpro.nchat.commons.Constants.Companion.PING_DELAY_MS
 import ru.namerpro.nchat.commons.Constants.Companion.STANDARD_AMOUNT_OF_ATTEMPTS
 import ru.namerpro.nchat.commons.Constants.Companion.STANDARD_KEY_SIZE_IN_BYTES
 import ru.namerpro.nchat.commons.SingleLiveEvent
@@ -19,6 +18,7 @@ import ru.namerpro.nchat.domain.api.interactor.InitializedClientsInteractor
 import ru.namerpro.nchat.domain.api.interactor.SecretKeyInteractor
 import ru.namerpro.nchat.domain.model.NetworkResponse
 import ru.namerpro.nchat.domain.model.Resource
+import ru.namerpro.nchat.domain.model.WeakChat
 
 class RootViewModel(
     private val chatManagerInteractor: ChatManagerInteractor,
@@ -63,17 +63,16 @@ class RootViewModel(
                     if (newChatsResource is Resource.Success) {
                         val newChats = newChatsResource.data
                         newChats?.forEach {
-                            // it = { chat id + chat name } + { partner id + partner name } + part of key
                             val secret = (15..25).random()
-                            val key = it.third
+                            val key = it.secret
                                 .pow(secret)
                                 .mod(DIFFIE_HELLMAN_CONSTANT_P)
                                 .toByteArray()
                                 .takeLast(STANDARD_KEY_SIZE_IN_BYTES)
                                 .toByteArray()
-                            CHAT_DATA[it.first.first] = Triple(it.first.second, it.second.second, key)
+                            CHAT_DATA[it.chatId] = WeakChat(it.chatName, it.partnerName, key, it.cipherType)
                             val toSend = DIFFIE_HELLMAN_CONSTANT_G.pow(secret).mod(DIFFIE_HELLMAN_CONSTANT_P)
-                            secretKeyInteractor.sendPartOfKey(it.second.first, it.first.first, toSend)
+                            secretKeyInteractor.sendPartOfKey(it.partnerId, it.chatId, toSend)
                         }
                         pingNewChatAttemptsLeftBeforeWarningShot = STANDARD_AMOUNT_OF_ATTEMPTS
                     } else {
@@ -83,8 +82,8 @@ class RootViewModel(
                             applicationStateLiveData.postValue(ApplicationState.FailedToPingNewChats)
                         }
                     }
-                    delay(Constants.PING_DELAY_MS)
                 }
+                delay(PING_DELAY_MS)
             }
         }
     }
@@ -94,19 +93,20 @@ class RootViewModel(
             while (true) {
                 if (CLIENT_ID != FIELD_NOT_INITIALIZED) {
                     val secretKeysResource = secretKeyInteractor.getPatsOfKeys(CLIENT_ID)
-                    Log.e("123", secretKeysResource.data.toString())
-                    Log.e("123", (secretKeysResource is Resource.Success).toString())
                     if (secretKeysResource is Resource.Success) {
                         val secretKeys = secretKeysResource.data
                         secretKeys?.forEach {
-                            // it = chat id + part of key
+                            val chatId = it.first
+                            while (CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS[chatId] == null) {
+                                delay(PING_DELAY_MS)
+                            }
                             val clientSecretConstant = CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS[it.first]!!
                             val secret = it.second
                                 .pow(clientSecretConstant)
                                 .toByteArray()
                                 .take(STANDARD_KEY_SIZE_IN_BYTES)
                                 .toByteArray()
-                            CHAT_DATA[it.first] = Triple(CHAT_DATA[it.first]?.first, CHAT_DATA[it.first]?.second, secret)
+                            CHAT_DATA[chatId] = WeakChat(CHAT_DATA[chatId]?.chatName, CHAT_DATA[chatId]?.partnerName, secret, CHAT_DATA[chatId]?.cipher)
                             CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS.remove(it.first)
                         }
                         pingPartsOfKeysAttemptsLeftBeforeWarningShot = STANDARD_AMOUNT_OF_ATTEMPTS
@@ -117,8 +117,8 @@ class RootViewModel(
                             applicationStateLiveData.postValue(ApplicationState.FailedToGetSecretKeys)
                         }
                     }
-                    delay(Constants.PING_DELAY_MS)
                 }
+                delay(PING_DELAY_MS)
             }
         }
     }
@@ -127,8 +127,7 @@ class RootViewModel(
         var CLIENT_ID: Long = FIELD_NOT_INITIALIZED
         var CLIENT_NAME: String = ""
 
-        // chat id -> chat name + partner name + secret key
-        val CHAT_DATA = hashMapOf<Long, Triple<String?, String?, ByteArray?>>()
+        val CHAT_DATA = hashMapOf<Long, WeakChat>()
         val CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS = hashMapOf<Long, Int>()
     }
 

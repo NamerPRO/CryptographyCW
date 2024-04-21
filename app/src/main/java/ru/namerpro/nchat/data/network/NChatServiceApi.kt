@@ -3,21 +3,13 @@ package ru.namerpro.nchat.data.network
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Path
+import ru.namerpro.nchat.data.dto.ChatDto
 import ru.namerpro.nchat.data.dto.ClientDto
 
 interface NChatServiceApi {
 
     @POST("/get_initialized_clients")
     suspend fun getInitializedClients(): ArrayList<ClientDto>
-
-    @POST("/add_new_chat/{creator_id}/{partner_id}/{chat_id}/{chat_name}")
-    suspend fun addNewChat(
-        @Path("creator_id") creatorId: Long,
-        @Path("partner_id") partnerId: Long,
-        @Path("chat_id") chatId: Long,
-        @Path("chat_name") chatName: String,
-        @Body secret: String
-    )
 
     @POST("/is_initialized/{client_id}")
     suspend fun isInitialized(
@@ -32,12 +24,13 @@ interface NChatServiceApi {
     @POST("/new_chats/{client_id}")
     suspend fun newChats(
         @Path("client_id") clientId: Long
-    ): List<Triple<Pair<Long, String>, Pair<Long, String>, String>>
+    ): List<ChatDto>
 
     @POST("/create_chat/{creator_id}/{partner_id}")
     suspend fun createChat(
         @Path("creator_id") creatorId: Long,
-        @Path("partner_id") partnerId: Long
+        @Path("partner_id") partnerId: Long,
+        @Body chatData: Triple<String, String, String>
     ): Long
 
     @POST("/send_part_of_key/{receiver_id}/{chat_id}")

@@ -4,17 +4,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.namerpro.nchat.commons.Constants.Companion.DIFFIE_HELLMAN_CONSTANT_G
 import ru.namerpro.nchat.commons.Constants.Companion.DIFFIE_HELLMAN_CONSTANT_P
-import ru.namerpro.nchat.commons.Constants.Companion.PING_DELAY_MS
 import ru.namerpro.nchat.commons.SingleLiveEvent
 import ru.namerpro.nchat.domain.api.interactor.ChatManagerInteractor
 import ru.namerpro.nchat.domain.api.interactor.InitializedClientsInteractor
+import ru.namerpro.nchat.domain.model.Cipher
 import ru.namerpro.nchat.domain.model.ClientModel
 import ru.namerpro.nchat.domain.model.Resource
 import ru.namerpro.nchat.domain.model.State
+import ru.namerpro.nchat.domain.model.WeakChat
 import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CHAT_DATA
 import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_ID
 import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS
@@ -59,21 +59,18 @@ class CreateChatViewModel(
 
     fun createChat(
         chatName: String,
-        partnerName: String
+        partnerName: String,
+        cipherType: String
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val partnerId = getClientIdByName(partnerName)
-            val chatIdResource = chatManagerInteractor.createChat(CLIENT_ID, partnerId)
+            val secret = (15..25).random()
+            val toSend = DIFFIE_HELLMAN_CONSTANT_G.pow(secret).mod(DIFFIE_HELLMAN_CONSTANT_P)
+            val chatIdResource = chatManagerInteractor.createChat(CLIENT_ID, partnerId, Triple(chatName, cipherType, toSend))
             if (chatIdResource is Resource.Success) {
                 val chatId = chatIdResource.data!!
-                val secret = (15..25).random()
-                CHAT_DATA[chatId] = Triple(chatName, partnerName, null)
                 CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS[chatId] = secret
-                val toSend = DIFFIE_HELLMAN_CONSTANT_G.pow(secret).mod(DIFFIE_HELLMAN_CONSTANT_P)
-                while (true) {
-                    val addNewChatResource = chatManagerInteractor.addNewChat(CLIENT_ID, partnerId, chatId, chatName, toSend)
-                    if (addNewChatResource !is Resource.Success) delay(PING_DELAY_MS) else break
-                }
+                CHAT_DATA[chatId] = WeakChat(chatName, partnerName, CHAT_DATA[chatId]?.secretKey, Cipher.fromString(cipherType))
             } else {
                 chatCreationStateLiveData.postValue(ChatCreationState.FailedToCreateChat)
             }

@@ -5,13 +5,6 @@ import ru.namerpro.nchat.data.dto.Response
 interface NetworkClient {
 
     suspend fun getInitializedClients(): Response
-    suspend fun addNewChat(
-        creatorId: Long,
-        partnerId: Long,
-        chatId: Long,
-        chatName: String,
-        secret: String
-    ): Response
 
     suspend fun isInitialized(
         clientId: Long
@@ -27,7 +20,8 @@ interface NetworkClient {
 
     suspend fun createChat(
         creatorId: Long,
-        partnerId: Long
+        partnerId: Long,
+        chatData: Triple<String, String, String>
     ): Response
 
     suspend fun sendPartOfKey(

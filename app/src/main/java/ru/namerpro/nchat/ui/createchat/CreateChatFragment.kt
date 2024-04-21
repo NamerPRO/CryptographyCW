@@ -54,8 +54,9 @@ class CreateChatFragment : Fragment() {
         binding?.createChat?.setOnClickListener {
             val chatName = binding?.chatName?.text?.toString() ?: ""
             val partnerName = binding?.selectPartner?.selectedItem?.toString()?.takeWhile { it != ' ' } ?: ""
+            val cipherType = binding?.cipherType?.selectedItem?.toString()?.takeWhile { it != ' ' } ?: ""
             binding?.chatName?.setText("")
-            viewModel.createChat(chatName, partnerName)
+            viewModel.createChat(chatName, partnerName, cipherType)
         }
 
         if (viewModel.initializedClients.isNullOrEmpty()) {

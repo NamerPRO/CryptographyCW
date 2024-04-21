@@ -5,7 +5,6 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import ru.namerpro.nchat.data.NetworkClient
 import ru.namerpro.nchat.data.dto.Response
-import ru.namerpro.nchat.data.dto.response.AddNewChatResponse
 import ru.namerpro.nchat.data.dto.response.CreateChatResponse
 import ru.namerpro.nchat.data.dto.response.GetPartsOfKeysResponse
 import ru.namerpro.nchat.data.dto.response.InitializeResponse
@@ -36,29 +35,6 @@ class RetrofitNetworkClient(
                 InitializedClientsResponse(clients).apply {
                     responseCode = NetworkResponse.SUCCESS.code
                 }
-            }
-        } catch (exception: HttpException) {
-            Response().apply { responseCode = exception.code() }
-        } catch (exception: ConnectException) {
-            handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
-        } catch (exception: SocketTimeoutException) {
-            handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
-        } catch (exception: UnknownHostException) {
-            handleNetworkException(exception, NetworkResponse.UNKNOWN_ERROR)
-        }
-    }
-
-    override suspend fun addNewChat(
-        creatorId: Long,
-        partnerId: Long,
-        chatId: Long,
-        chatName: String,
-        secret: String
-    ): Response {
-        return try {
-            withContext(Dispatchers.IO) {
-                nChatServiceApi.addNewChat(creatorId, partnerId, chatId, chatName, secret)
-                AddNewChatResponse().apply { responseCode = NetworkResponse.SUCCESS.code }
             }
         } catch (exception: HttpException) {
             Response().apply { responseCode = exception.code() }
@@ -130,11 +106,12 @@ class RetrofitNetworkClient(
 
     override suspend fun createChat(
         creatorId: Long,
-        partnerId: Long
+        partnerId: Long,
+        chatData: Triple<String, String, String>
     ): Response {
         return try {
             withContext(Dispatchers.IO) {
-                val chatId = nChatServiceApi.createChat(creatorId, partnerId)
+                val chatId = nChatServiceApi.createChat(creatorId, partnerId, chatData)
                 CreateChatResponse(chatId).apply { responseCode = NetworkResponse.SUCCESS.code }
             }
         } catch (exception: HttpException) {

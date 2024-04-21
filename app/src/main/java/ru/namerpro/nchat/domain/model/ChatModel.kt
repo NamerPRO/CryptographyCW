@@ -4,6 +4,7 @@ data class ChatModel(
     val id: Long,
     val name: String,
     val partnerName: String,
+    val cipher: Cipher,
     val key: ByteArray
 ) {
 

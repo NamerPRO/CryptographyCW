@@ -1,25 +1,18 @@
 package ru.namerpro.nchat.domain.api.repository
 
+import ru.namerpro.nchat.domain.model.ChatData
 import ru.namerpro.nchat.domain.model.Resource
-import java.math.BigInteger
 
 interface ChatManagerRepository {
 
-    suspend fun addNewChat(
-        creatorId: Long,
-        partnerId: Long,
-        chatId: Long,
-        chatName: String,
-        secret: String
-    ): Resource<Unit>
-
     suspend fun newChats(
         clientId: Long
-    ): Resource<List<Triple<Pair<Long, String>, Pair<Long, String>, BigInteger>>>
+    ): Resource<List<ChatData>>
 
     suspend fun createChat(
         creatorId: Long,
-        partnerId: Long
+        partnerId: Long,
+        chatData: Triple<String, String, String>
     ): Resource<Long>
 
 }

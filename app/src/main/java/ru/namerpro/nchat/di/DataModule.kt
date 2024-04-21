@@ -20,7 +20,7 @@ val dataModule = module {
 
     single<NChatServiceApi> {
         Retrofit.Builder()
-            .baseUrl("http://192.168.79.99:8080/")
+            .baseUrl("http://192.168.47.99:8080/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(NChatServiceApi::class.java)
