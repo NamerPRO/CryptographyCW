@@ -13,11 +13,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.namerpro.nchat.R
+import ru.namerpro.nchat.commons.Constants.Companion.FIELD_NOT_INITIALIZED
 import ru.namerpro.nchat.commons.showDialog
 import ru.namerpro.nchat.databinding.FragmentCreateChatBinding
-import ru.namerpro.nchat.domain.model.ClientModel
-import ru.namerpro.nchat.domain.model.State
+import ru.namerpro.nchat.domain.model.Client
 import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_ID
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_NAME
 
 class CreateChatFragment : Fragment() {
 
@@ -52,17 +53,19 @@ class CreateChatFragment : Fragment() {
         }
 
         binding?.createChat?.setOnClickListener {
-            val chatName = binding?.chatName?.text?.toString() ?: ""
-            val partnerName = binding?.selectPartner?.selectedItem?.toString()?.takeWhile { it != ' ' } ?: ""
-            val cipherType = binding?.cipherType?.selectedItem?.toString()?.takeWhile { it != ' ' } ?: ""
+            val chatName = binding?.chatName?.text?.toString()?.trim() ?: ""
+            val partner = binding?.selectPartner?.let {
+                it.adapter.getItem(it.selectedItemPosition)
+            } as Client
+            val cipherType = binding?.cipherType?.selectedItem?.toString()?.takeWhile { it != ' ' } ?: STANDARD_CIPHER
             binding?.chatName?.setText("")
-            viewModel.createChat(chatName, partnerName, cipherType)
+            viewModel.createChat(chatName, partner.id, partner.name, cipherType)
         }
 
         if (viewModel.initializedClients.isNullOrEmpty()) {
             viewModel.getInitializedClients()
         } else {
-            handleClientsInitialized(viewModel.initializedClients!!)
+            fillSpinnerWithClients(viewModel.initializedClients!!)
         }
     }
 
@@ -77,8 +80,7 @@ class CreateChatFragment : Fragment() {
                 before: Int,
                 count: Int
             ) {
-                viewModel.chatPreparationState = isChatCreatable()
-                binding?.createChat?.isEnabled = viewModel.chatPreparationState is State.WithData
+                binding?.createChat?.isEnabled = isChatCreatable()
             }
         })
 
@@ -90,8 +92,7 @@ class CreateChatFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
-                viewModel.chatPreparationState = isChatCreatable()
-                binding?.createChat?.isEnabled = viewModel.chatPreparationState is State.WithData
+                binding?.createChat?.isEnabled = isChatCreatable()
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {}
@@ -99,17 +100,13 @@ class CreateChatFragment : Fragment() {
         }
     }
 
-    private fun isChatCreatable(): State<Triple<String, String, String>> {
+    private fun isChatCreatable(): Boolean {
         val partnerName = binding?.selectPartner?.selectedItem?.toString()
         if (partnerName.isNullOrBlank() || partnerName == getString(R.string.no_clients_online) || partnerName == getString(R.string.failed_to_get_clients)) {
-            return State.NotReady()
+            return false
         }
-        val chatName = binding?.chatName?.text?.toString()?.takeWhile { it != ' ' }
-        if (chatName.isNullOrBlank()) {
-            return State.NotReady()
-        }
-        val cipherType = binding?.cipherType?.selectedItem?.toString()?.takeWhile { it != ' ' } ?: STANDARD_CIPHER
-        return State.WithData(Triple(chatName, cipherType, partnerName))
+        val chatName = binding?.chatName?.text?.toString()?.trim()
+        return !chatName.isNullOrEmpty()
     }
 
     private fun render(
@@ -117,7 +114,7 @@ class CreateChatFragment : Fragment() {
     ) {
         when (state) {
             is ChatCreationState.InitializedClientsRequestSuccess -> handleClientsInitialized(state.clients)
-            is ChatCreationState.InitializedClientsRequestFailed -> fillSpinnerWithClients(listOf(getString(R.string.failed_to_get_clients)))
+            is ChatCreationState.InitializedClientsRequestFailed -> fillSpinnerWithClients(listOf(Client(FIELD_NOT_INITIALIZED, getString(R.string.failed_to_get_clients))))
             is ChatCreationState.FailedToCreateChat -> showDialog(requireContext(), getString(R.string.chat_creation_failed_title), getString(R.string.chat_creation_failed_message))
             is ChatCreationState.FailedToGetNewChats -> Toast.makeText(requireContext(), getString(R.string.failed_to_get_new_chats), Toast.LENGTH_SHORT).show()
             is ChatCreationState.FailedToAddNewChat -> Toast.makeText(requireContext(), getString(R.string.failed_to_add_new_chat), Toast.LENGTH_SHORT).show()
@@ -125,26 +122,23 @@ class CreateChatFragment : Fragment() {
     }
 
     private fun handleClientsInitialized(
-        clients: List<ClientModel>
+        clients: MutableList<Client>
     ) {
         val partners = if (clients.isEmpty()) {
-            listOf(getString(R.string.no_clients_online))
+            mutableListOf(Client(FIELD_NOT_INITIALIZED, getString(R.string.no_clients_online)))
         } else {
-            clients.map {
-                if (it.id == CLIENT_ID) {
-                    it.name + " (Вы)"
-                } else {
-                    it.name
-                }
-            }.toList()
+            val sortedClients = clients.sortedBy { it.id }
+            val clientIndex = sortedClients.binarySearchBy(CLIENT_ID) { it.id }
+            clients[clientIndex] = Client(clients[clientIndex].id, "${clients[clientIndex].name} ${getString(R.string.suffix_after_your_client_name)}")
+            clients
         }
         fillSpinnerWithClients(partners)
     }
 
     private fun fillSpinnerWithClients(
-        partners: List<String>
+        partners: List<Client>
     ) {
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, partners)
+        val spinnerAdapter = ClientArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, partners)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding?.selectPartner?.adapter = spinnerAdapter
     }

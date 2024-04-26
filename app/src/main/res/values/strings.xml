@@ -49,5 +49,8 @@
     <string name="failed_to_get_secret_keys">Не удалось обеспечить безопасную передачу данных. Мы попробуем это снова позже…</string>
     <string name="name_not_available">Введенное Вами имя сейчас занято. Укажите другое или попробуйте позже…</string>
     <string name="chat_partner">Собеседник: %1$s</string>
-    <string name="chat_partner_error">Не удалось получить!</string>
+    <string name="invalid_message">Сообщение должно содержать текст и не может состоять из одних пробелов</string>
+    <string name="suffix_after_your_client_name"> (Вы)</string>
+    <string name="chat_ended">Переписка прекращена!</string>
+    <string name="chat_ended_reason">Собеседник покинул чат</string>
 </resources>

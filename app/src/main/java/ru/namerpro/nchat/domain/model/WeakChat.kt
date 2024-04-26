@@ -4,7 +4,8 @@ data class WeakChat(
     var chatName: String?,
     var partnerName: String?,
     var secretKey: ByteArray?,
-    var cipher: Cipher?
+    var cipher: Cipher?,
+    var iv: ByteArray?
 ) {
 
     override fun equals(other: Any?): Boolean {
@@ -19,7 +20,13 @@ data class WeakChat(
             if (other.secretKey == null) return false
             if (!secretKey.contentEquals(other.secretKey)) return false
         } else if (other.secretKey != null) return false
-        return cipher == other.cipher
+        if (cipher != other.cipher) return false
+        if (iv != null) {
+            if (other.iv == null) return false
+            if (!iv.contentEquals(other.iv)) return false
+        } else if (other.iv != null) return false
+
+        return true
     }
 
     override fun hashCode(): Int {
@@ -27,6 +34,7 @@ data class WeakChat(
         result = 31 * result + (partnerName?.hashCode() ?: 0)
         result = 31 * result + (secretKey?.contentHashCode() ?: 0)
         result = 31 * result + (cipher?.hashCode() ?: 0)
+        result = 31 * result + (iv?.contentHashCode() ?: 0)
         return result
     }
 

@@ -4,11 +4,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ru.namerpro.nchat.databinding.ChatItemBinding
-import ru.namerpro.nchat.domain.model.ChatModel
+import ru.namerpro.nchat.domain.model.Chat
 
 class ChatListAdapter(
-    val chats: ArrayList<ChatModel>,
-    private val itemClickListener: ((ChatModel) -> Unit)
+    val chats: ArrayList<Chat>,
+    private val itemClickListener: ((Chat) -> Unit)
 ) : RecyclerView.Adapter<ChatListViewHolder>() {
 
     override fun onCreateViewHolder(

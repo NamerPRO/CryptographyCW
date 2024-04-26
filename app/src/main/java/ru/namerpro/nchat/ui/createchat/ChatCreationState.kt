@@ -1,11 +1,11 @@
 package ru.namerpro.nchat.ui.createchat
 
-import ru.namerpro.nchat.domain.model.ClientModel
+import ru.namerpro.nchat.domain.model.Client
 
 sealed interface ChatCreationState {
 
     data class InitializedClientsRequestSuccess(
-        val clients: List<ClientModel>
+        val clients: MutableList<Client>
     ) : ChatCreationState
 
     data object InitializedClientsRequestFailed: ChatCreationState

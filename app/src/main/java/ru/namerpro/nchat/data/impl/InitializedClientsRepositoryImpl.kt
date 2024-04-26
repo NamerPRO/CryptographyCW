@@ -6,18 +6,19 @@ import ru.namerpro.nchat.data.dto.response.InitializeResponse
 import ru.namerpro.nchat.data.dto.response.InitializedClientsResponse
 import ru.namerpro.nchat.data.dto.response.IsClientInitializedResponse
 import ru.namerpro.nchat.domain.api.repository.InitializedClientsRepository
-import ru.namerpro.nchat.domain.model.ClientModel
+import ru.namerpro.nchat.domain.model.Client
 import ru.namerpro.nchat.domain.model.Resource
+import java.util.Collections
 
 class InitializedClientsRepositoryImpl(
     private val networkClient: NetworkClient
 ) : InitializedClientsRepository {
 
-    override suspend fun getInitializedClients(): Resource<List<ClientModel>> {
+    override suspend fun getInitializedClients(): Resource<MutableList<Client>> {
         val response = networkClient.getInitializedClients()
         return if (response.responseCode == SUCCESS_RESPONSE_CODE) {
             Resource.Success(
-                (response as InitializedClientsResponse).clients.map { ClientModel(it.first, it.second) }.toList()
+                (response as InitializedClientsResponse).clients.map { Client(it.first, it.second) }.toMutableList()
             )
         } else {
             Resource.Error(response.responseCode)

@@ -1,6 +1,7 @@
 package ru.namerpro.nchat.domain.api.interactor
 
 import ru.namerpro.nchat.domain.model.Resource
+import ru.namerpro.nchat.domain.model.SecretKey
 import java.math.BigInteger
 
 interface SecretKeyInteractor {
@@ -13,6 +14,6 @@ interface SecretKeyInteractor {
 
     suspend fun getPatsOfKeys(
         clientId: Long
-    ): Resource<List<Pair<Long, BigInteger>>>
+    ): Resource<List<SecretKey>>
 
 }

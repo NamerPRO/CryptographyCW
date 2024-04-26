@@ -1,7 +1,7 @@
 package ru.namerpro.nchat.domain.api.repository
 
 import ru.namerpro.nchat.domain.model.Resource
-import java.math.BigInteger
+import ru.namerpro.nchat.domain.model.SecretKey
 
 interface SecretKeyRepository {
 
@@ -13,6 +13,6 @@ interface SecretKeyRepository {
 
     suspend fun getPatsOfKeys(
         clientId: Long
-    ): Resource<List<Pair<Long, BigInteger>>>
+    ): Resource<List<SecretKey>>
 
 }

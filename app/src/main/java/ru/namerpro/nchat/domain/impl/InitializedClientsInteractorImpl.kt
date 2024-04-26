@@ -2,14 +2,14 @@ package ru.namerpro.nchat.domain.impl
 
 import ru.namerpro.nchat.domain.api.interactor.InitializedClientsInteractor
 import ru.namerpro.nchat.domain.api.repository.InitializedClientsRepository
-import ru.namerpro.nchat.domain.model.ClientModel
+import ru.namerpro.nchat.domain.model.Client
 import ru.namerpro.nchat.domain.model.Resource
 
 class InitializedClientsInteractorImpl(
     private val initializedClientsRepository: InitializedClientsRepository
 ) : InitializedClientsInteractor {
 
-    override suspend fun getInitializedClients(): Resource<List<ClientModel>> {
+    override suspend fun getInitializedClients(): Resource<MutableList<Client>> {
         return initializedClientsRepository.getInitializedClients()
     }
 

@@ -5,6 +5,7 @@ import ru.namerpro.nchat.data.NetworkClient
 import ru.namerpro.nchat.data.dto.response.GetPartsOfKeysResponse
 import ru.namerpro.nchat.domain.api.repository.SecretKeyRepository
 import ru.namerpro.nchat.domain.model.Resource
+import ru.namerpro.nchat.domain.model.SecretKey
 import java.math.BigInteger
 import java.util.Base64
 
@@ -27,12 +28,19 @@ class SecretKeyRepositoryImpl(
 
     override suspend fun getPatsOfKeys(
         clientId: Long
-    ): Resource<List<Pair<Long, BigInteger>>> {
+    ): Resource<List<SecretKey>> {
         val response = networkClient.getPartsOfKeys(clientId)
         return if (response.responseCode == SUCCESS_RESPONSE_CODE) {
             Resource.Success(
                 (response as GetPartsOfKeysResponse).partsOfKeys.map {
-                    Pair(it.first, BigInteger(Base64.getDecoder().decode(it.second.substring(1, it.second.length - 1))))
+                    SecretKey(
+                        it.chatId,
+                        BigInteger(
+                            Base64.getDecoder().decode(
+                                it.partOfKey.substring(1, it.partOfKey.length - 1)
+                            )
+                        )
+                    )
                 }
             )
         } else {

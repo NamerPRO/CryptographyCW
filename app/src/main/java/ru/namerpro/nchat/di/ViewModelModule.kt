@@ -1,5 +1,6 @@
 package ru.namerpro.nchat.di
 
+import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import ru.namerpro.nchat.ui.chat.ChatViewModel
@@ -29,7 +30,10 @@ val viewModelModule = module {
     }
 
     viewModel {
-        ChatViewModel()
+        ChatViewModel(
+            messagesInteractor = get(),
+            application = get()
+        )
     }
 
 }
