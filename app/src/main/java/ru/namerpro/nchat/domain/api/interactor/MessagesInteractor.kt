@@ -4,6 +4,7 @@ import android.net.Uri
 import ru.namerpro.nchat.domain.entities.ciphers.context.SymmetricEncrypterContext
 import ru.namerpro.nchat.domain.model.Message
 import ru.namerpro.nchat.domain.model.Resource
+import ru.namerpro.nchat.domain.model.Task
 
 interface MessagesInteractor {
 
@@ -21,16 +22,18 @@ interface MessagesInteractor {
     ): Resource<Unit>
 
     suspend fun uploadEncryptedFile(
-        fileName: String,
         clientId: Long,
         chatId: Long,
         message: Message.File,
-        encrypter: SymmetricEncrypterContext
-    ): Resource<String>
+        encrypter: SymmetricEncrypterContext,
+        task: Task
+    ): Resource<Unit>
 
-    fun getDecryptedFileUri(
+    suspend fun downloadFile(
         message: Message.File,
-        encrypter: SymmetricEncrypterContext
-    ): Resource<Uri>
+        pathToFolder: String,
+        encrypter: SymmetricEncrypterContext,
+        task: Task
+    ): Resource<Unit>
 
 }

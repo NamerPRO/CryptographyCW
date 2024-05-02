@@ -96,15 +96,16 @@ class RootViewModel(
                     if (secretKeysResource is Resource.Success) {
                         val secretKeys = secretKeysResource.data
                         secretKeys?.forEach {
-                            val chatId = it.chatId
+                            val chatId: Long = it.chatId
                             while (CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS[chatId] == null) {
                                 delay(PING_DELAY_MS)
                             }
                             val clientSecretConstant = CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS[chatId]!!
                             val secret = it.partOfKey
                                 .pow(clientSecretConstant)
+                                .mod(DIFFIE_HELLMAN_CONSTANT_P)
                                 .toByteArray()
-                                .take(STANDARD_KEY_SIZE_IN_BYTES)
+                                .takeLast(STANDARD_KEY_SIZE_IN_BYTES)
                                 .toByteArray()
                             CHAT_DATA[chatId] = WeakChat(CHAT_DATA[chatId]?.chatName, CHAT_DATA[chatId]?.partnerName, secret, CHAT_DATA[chatId]?.cipher, CHAT_DATA[chatId]?.iv)
                             CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS.remove(chatId)
@@ -129,6 +130,8 @@ class RootViewModel(
 
         val CHAT_DATA = hashMapOf<Long, WeakChat>()
         val CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS = hashMapOf<Long, Int>()
+
+        var DOWNLOAD_NOTINIFCTION_ID = 0
     }
 
 }

@@ -1,36 +1,32 @@
 package ru.namerpro.nchat.domain.model
 
+import kotlinx.coroutines.CoroutineScope
 import java.io.InputStream
 
 sealed class Message(
-    val contentType: Int,
+    val type: Int,
     val isMessageReceived: Boolean
 ) {
 
     data class Data(
-        val messageReceived: Boolean,
         val text: String,
         val date: String,
-        val messageContentType: Int
-    ) : Message(messageContentType, messageReceived)
+        var isReceived: Boolean,
+        val contentType: Int
+    ) : Message(contentType, isReceived)
 
     data class File(
-        val messageReceived: Boolean,
-        val name: String?,
-        val src: InputStream,
-        val type: String,
-        val size: Long,
+        var devicePath: String? = null,
+        val realName: String,
         val date: String,
-        val messageContentType: Int,
-        var dest: String? = null
-    ) : Message(messageContentType, messageReceived)
+        val isReceived: Boolean,
+        val contentType: Int,
+        var file: Pair<Long, InputStream?>? = null,
+        var progress: Double,
+        var coroutineScope: CoroutineScope? = null
+    ) : Message(contentType, isReceived)
 
-    data object ChatEnd : Message(MESSAGE_CONVERSATION_END_CODE,true)
-
-    data class FailedToLoadFile(
-        val messageContentType: Int,
-        val date: String
-    ) : Message(messageContentType, true)
+    data object ChatEnd : Message(MESSAGE_CONVERSATION_END_CODE, true)
 
     companion object {
         const val MESSAGE_TEXT_CODE = 0

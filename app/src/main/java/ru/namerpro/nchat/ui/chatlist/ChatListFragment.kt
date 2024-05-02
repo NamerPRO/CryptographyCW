@@ -65,6 +65,8 @@ class ChatListFragment : Fragment() {
         viewModel.observeAvailableChats().observe(viewLifecycleOwner) {
             render(it)
         }
+
+        viewModel.getChatsFromDb()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -73,11 +75,14 @@ class ChatListFragment : Fragment() {
     ) {
         when (state) {
             is ChatListState.UpdateChatList -> {
-                if (chatListAdapter?.chats != state.chats) {
-                    chatListAdapter?.chats?.clear()
-                    chatListAdapter?.chats?.addAll(state.chats)
-                    chatListAdapter?.notifyDataSetChanged()
-                }
+                viewModel.addChatsToDb(state.chats)
+                chatListAdapter?.chats?.addAll(state.chats)
+                chatListAdapter?.chats?.sortByDescending { it.id }
+                chatListAdapter?.notifyDataSetChanged()
+            }
+            is ChatListState.ChatsRestoreFromDb -> {
+                chatListAdapter?.chats?.addAll(state.chats)
+                chatListAdapter?.notifyDataSetChanged()
             }
         }
     }

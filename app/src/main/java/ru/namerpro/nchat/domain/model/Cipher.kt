@@ -11,7 +11,7 @@ enum class Cipher {
             cipher: String
         ) = when (cipher) {
             "\"RC5\"", "RC5" -> RC5
-            "\"Magenta\"", "Magenta" -> MAGENTA
+            "\"Magenta\"", "Magenta", "MAGENTA", "\"MAGENTA\"" -> MAGENTA
             else -> error("Never thrown. Added to make compiler happy.")
         }
 

@@ -32,6 +32,7 @@
     <string name="clients_updating">Список клиентов обновлен</string>
     <string name="dialog_cancel_button">Отмена</string>
     <string name="dialog_finish_button">Ок</string>
+    <string name="dialog_exit_button">Выход</string>
     <string name="chat_creation_failed_title">Ошибка!</string>
     <string name="chat_creation_failed_message">Не удается создать чат. Возможно, клиент, которого Вы выбрали уже не в сети. Попробуйте обновить список клиентов и повторите попытку.\n\nЭто также может произойти потому что сервер временно не доступен или возникли проблемы с интернетом…</string>
     <string name="dialog_enter_input_button">Ввод</string>
@@ -53,4 +54,23 @@
     <string name="suffix_after_your_client_name"> (Вы)</string>
     <string name="chat_ended">Переписка прекращена!</string>
     <string name="chat_ended_reason">Собеседник покинул чат</string>
+    <string name="uploading_text">Загружаем…</string>
+    <string name="cancel_uploading">Отменить операцию</string>
+    <string name="cancel_downloading">Отменить операцию</string>
+    <string name="downloading_text">Загружаем…</string>
+    <string name="failed_to_send_message">Не удалось отправить сообщение. Попробуйте еще раз</string>
+    <string name="failed_to_send_file">Не удалось отправить файл. Попробуйте еще раз</string>
+    <string name="too_many_files_uploaded_title">Ого!</string>
+    <string name="too_many_files_uploaded_text">Слишком много независимых файлов сейчас уже отправляются на сервер. Пожалуйста, подождите, пока отправится хотя бы один из них и повторите попытку.\n\nВы также можете сгруппировать все ваши файлы в архив и отправить за один раз…</string>
+    <string name="are_you_sure_title">Вы уверены?</string>
+    <string name="are_you_sure_text">Если выйти сейчас, то отправка всех еще не отправленных файлов будет прервана.</string>
+    <string name="upload_cancelled">Сообщение не отправлено</string>
+    <string name="download_cancelled">Сообщение не полчено</string>
+    <string name="failed_to_get_messages">Не удалось получить сообщения…</string>
+    <string name="download_notification_title">Скачиваем "%1$s"</string>
+    <string name="download_notification_text">Прогресс: %1$d%%</string>
+    <string name="download_notification_title_on_load_end">Загрузка завершена!</string>
+    <string name="download_notification_text_on_load_end">Файл "%1$s" сохранен в downloads/%2$s</string>
+    <string name="file_already_downloaded_on_click">Файл с таким именем уже находится в папке downloads/nchat</string>
+    <string name="file_download_failed_on_click">Не удалось загрузить файл!</string>
 </resources>

@@ -1,16 +1,17 @@
 package ru.namerpro.nchat.data.network
 
 import android.app.Application
-import android.net.Uri
-import androidx.core.net.toFile
+import android.os.Environment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import org.apache.commons.io.IOUtils
 import retrofit2.HttpException
 import ru.namerpro.nchat.commons.Constants
-import ru.namerpro.nchat.commons.Constants.Companion.ENCRYPTED_FILE_PREFIX
+import ru.namerpro.nchat.commons.ResponseBodyListener
+import ru.namerpro.nchat.commons.downloadToFileWithProgress
+import ru.namerpro.nchat.commons.getDownloader
 import ru.namerpro.nchat.commons.saveFileInCache
 import ru.namerpro.nchat.data.NetworkClient
 import ru.namerpro.nchat.data.dto.Response
@@ -27,8 +28,8 @@ import ru.namerpro.nchat.data.dto.response.SendMessageResponse
 import ru.namerpro.nchat.data.dto.response.SendPartOfKeyResponse
 import ru.namerpro.nchat.data.dto.response.UploadFileResponse
 import ru.namerpro.nchat.domain.model.NetworkResponse
+import ru.namerpro.nchat.domain.model.Task
 import java.io.File
-import java.io.InputStream
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -222,14 +223,16 @@ class RetrofitNetworkClient(
     }
 
     override suspend fun uploadFile(
+        task: Task,
         clientId: Long,
         chatId: Long,
         file: File,
         message: String
     ): Response {
         return try {
-            val requestFile = RequestBody.create(MultipartBody.FORM, file)
+            val requestFile = CountingRequestBody(MultipartBody.FORM, file, task)// RequestBody.create(MultipartBody.FORM, file)
             val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            task.coroutineScope.ensureActive()
             nChatServiceApi.uploadFile(clientId, chatId, body, message)
             UploadFileResponse().apply { responseCode = NetworkResponse.SUCCESS.code }
         } catch (exception: Throwable) {
@@ -244,11 +247,20 @@ class RetrofitNetworkClient(
     }
 
     override suspend fun downloadFile(
+        task: Task,
+        pathToFolder: String,
         fileName: String
     ): Response {
         return try {
-            val data = nChatServiceApi.downloadFile(fileName)
-            val file = saveFileInCache(fileName, data.byteStream(), application)
+            val listener = ResponseBodyListener {
+                it.downloadToFileWithProgress(fileName, File(pathToFolder), task)
+            }
+            task.coroutineScope.ensureActive()
+            getDownloader(listener)
+                .create(NChatServiceApi::class.java)
+                .downloadFile(fileName)
+            task.coroutineScope.ensureActive()
+            val file = File(pathToFolder, fileName)
             DownloadFileResponse(file.inputStream(), file.length()).apply { responseCode = NetworkResponse.SUCCESS.code }
         } catch (exception: Throwable) {
             when (exception) {

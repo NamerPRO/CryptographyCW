@@ -10,6 +10,11 @@ import ru.namerpro.nchat.di.viewModelModule
 class App : Application() {
 
     override fun onCreate() {
+        System.setProperty(
+            kotlinx.coroutines.DEBUG_PROPERTY_NAME,
+            kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
+        )
+
         super.onCreate()
         startKoin {
             androidContext(this@App)

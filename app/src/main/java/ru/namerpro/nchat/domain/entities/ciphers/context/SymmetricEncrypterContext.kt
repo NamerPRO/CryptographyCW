@@ -1,5 +1,7 @@
 package ru.namerpro.nchat.domain.entities.ciphers.context
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import ru.namerpro.nchat.domain.entities.ciphers.context.encrypter.Encrypter
 import ru.namerpro.nchat.domain.entities.ciphers.encryptionstate.EncryptionState
 import ru.namerpro.nchat.domain.entities.ciphers.mode.Mode
@@ -20,6 +22,7 @@ import ru.namerpro.nchat.domain.entities.ciphers.symmetricapi.modes.SymmetricEnc
 import ru.namerpro.nchat.domain.entities.ciphers.symmetricapi.modes.SymmetricPaddingMode
 import ru.namerpro.nchat.domain.entities.ciphers.symmetricencrypters.magenta.Magenta
 import ru.namerpro.nchat.domain.entities.ciphers.symmetricencrypters.rc5.RC5
+import ru.namerpro.nchat.domain.model.Task
 import java.io.IOException
 import java.io.InputStream
 import java.io.RandomAccessFile
@@ -27,6 +30,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.min
 
 class SymmetricEncrypterContext(
     encrypter: Encrypter,
@@ -36,9 +40,7 @@ class SymmetricEncrypterContext(
     iv: ByteArray?,
     vararg options: Any
 ) : AutoCloseable {
-    val service: ExecutorService = Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors()
-    )
+    private val service: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
     private var mode: SymmetricEncryptMode? = null
     private val padding: SymmetricPaddingMode
     private var encrypter: SymmetricEncrypter? = null
@@ -48,7 +50,7 @@ class SymmetricEncrypterContext(
         when (encrypter) {
             Encrypter.MAGENTA -> {
                 require(options.size < 2) { "Expected to see either primitive element of GF(2^8) passed as optional argument or nothing in case you want standard primitive element ot be applied, but more then one element passed found!" }
-                val alpha = if (options.isEmpty()) 2u else options[0] as UByte
+                val alpha = if (options.isEmpty()) 2u else (options[0] as UByte)
                 this.encrypter = Magenta(key, alpha)
                 this.blockSize = 16
             }
@@ -101,12 +103,13 @@ class SymmetricEncrypterContext(
     }
 
     fun encrypt(
+        task: Task,
         input: InputStream,
         output: RandomAccessFile,
         size: Long
     ): CompletableFuture<EncryptionState> {
         return CompletableFuture.supplyAsync {
-            return@supplyAsync fileEncryptionDecryptionCore(input, output, size, true)
+            return@supplyAsync fileEncryptionDecryptionCore(task, input, output, size, true)
         }
     }
 
@@ -120,84 +123,105 @@ class SymmetricEncrypterContext(
     }
 
     fun decrypt(
+        task: Task,
         input: InputStream,
         output: RandomAccessFile,
         size: Long
     ): CompletableFuture<EncryptionState> {
         return CompletableFuture.supplyAsync {
-            return@supplyAsync fileEncryptionDecryptionCore(input, output, size, false)
+            return@supplyAsync fileEncryptionDecryptionCore(task, input, output, size, false)
         }
     }
 
     private fun fileEncryptionDecryptionCore(
+        task: Task,
         input: InputStream,
         output: RandomAccessFile,
         size: Long,
         isEncrypting: Boolean
     ): EncryptionState {
         try {
-            val potionSize = AMOUNT_OF_BLOCKS_TO_READ * blockSize
+            val potionSize = MEMORY_LIMIT_SIZE * blockSize
             val buffer = ByteArray(potionSize)
-            var length: Int
-            var position = 0L
-            val parts = hashSetOf<Pair<Long, CompletableFuture<ByteArray>>>()
+            var position = 0L ; var length: Int
             while (input.read(buffer).also { length = it } > 0) {
-                val data = if (position + length + potionSize < size) {
-                    val taskBuffer = buffer.clone()
-                    if (isEncrypting) {
-                        CompletableFuture.supplyAsync {
-                            mode!!.apply(taskBuffer, blockSize, encrypter!!)
-                        }
-                    } else {
-                        CompletableFuture.supplyAsync {
-                            mode!!.reverse(taskBuffer, blockSize, encrypter!!)
-                        }
-                    }
-                } else {
-                    val endBuffer = ByteArray(potionSize)
-                    val endLength = input.read(endBuffer)
-                    if (isEncrypting) {
-                        if (endLength == -1) {
-                            encrypt(buffer.take(length).toByteArray())
-                        } else {
-                            encrypt(buffer + endBuffer.take(endLength).toByteArray())
-                        }
-                    } else {
-                        if (endLength == -1) {
-                            decrypt(buffer.take(length).toByteArray())
-                        } else {
-                            decrypt(buffer + endBuffer.take(endLength).toByteArray())
-                        }
-                    }
-                }
-                parts.add(Pair(position, data))
+                task.coroutineScope.ensureActive()
+                val isLast = (position + potionSize) >= size
+                val sendableBuffer = if (!isLast) buffer else buffer.take(length).toByteArray()
+                val parts = runPartialEncryption(task, position, sendableBuffer, length.toLong(), isEncrypting, isLast)
+                collectPartsToEncryptedFile(task, output, parts)
                 position += potionSize
-            }
-            var it = parts.iterator()
-            while (it.hasNext()) {
-                val data = it.next()
-                if (data.second.isDone) {
-                    val dataBuffer = data.second.get()
-                    val offset = data.first
-                    output.seek(offset)
-                    output.write(dataBuffer)
-                    it.remove()
-                }
-                if (!it.hasNext()) {
-                    it = parts.iterator()
-                }
+                val progressToAdd = 1.0 * PROGRESS_SECTION_THAT_TAKES_ENCRYPTION * min(length.toLong(), size) / size
+                task.progress.invoke(progressToAdd)
             }
             return EncryptionState.Success
-        } catch (error: IOException) {
-            Thread.currentThread().interrupt()
-            return EncryptionState.Error(error)
-        } catch (error: ExecutionException) {
-            Thread.currentThread().interrupt()
-            return EncryptionState.Error(error)
-        } catch (error: InterruptedException) {
-            Thread.currentThread().interrupt()
-            return EncryptionState.Error(error)
+        } catch (error: Throwable) {
+            when (error) {
+                is IOException, is ExecutionException, is InterruptedException -> {
+                    Thread.currentThread().interrupt()
+                    return EncryptionState.Error(error)
+                }
+            }
+            throw error
         }
+    }
+
+    private fun collectPartsToEncryptedFile(
+        task: Task,
+        output: RandomAccessFile,
+        parts: HashSet<Pair<Long, CompletableFuture<ByteArray>>>
+    ) {
+        var it = parts.iterator()
+        while (it.hasNext()) {
+            task.coroutineScope.ensureActive()
+            val data = it.next()
+            if (data.second.isDone) {
+                val dataBuffer = data.second.get()
+                val offset = data.first
+                output.seek(offset)
+                output.write(dataBuffer)
+                it.remove()
+            }
+            if (!it.hasNext()) {
+                it = parts.iterator()
+            }
+        }
+    }
+
+    private fun runPartialEncryption(
+        task: Task,
+        startOffset: Long,
+        byteBuffer: ByteArray,
+        size: Long,
+        isEncrypting: Boolean,
+        isLast: Boolean
+    ): HashSet<Pair<Long, CompletableFuture<ByteArray>>> {
+        val potionSize = AMOUNT_OF_BLOCKS_TO_READ * blockSize
+        var length: Int; var position = 0L
+        val buffer = ByteArray(potionSize)
+        val parts = hashSetOf<Pair<Long, CompletableFuture<ByteArray>>>()
+        val input = byteBuffer.inputStream()
+        while (input.read(buffer).also { length = it } > 0) {
+            task.coroutineScope.ensureActive()
+            val data = if (!isLast || position + length + potionSize < size) {
+                val taskBuffer = buffer.clone()
+                if (isEncrypting) CompletableFuture.supplyAsync { mode!!.apply(taskBuffer, blockSize, encrypter!!) }
+                    else CompletableFuture.supplyAsync { mode!!.reverse(taskBuffer, blockSize, encrypter!!) }
+            } else {
+                val endBuffer = ByteArray(potionSize)
+                val endLength = input.read(endBuffer)
+                if (isEncrypting) {
+                    if (endLength == -1) encrypt(buffer.take(length).toByteArray())
+                        else encrypt(buffer + endBuffer.take(endLength).toByteArray())
+                } else {
+                    if (endLength == -1) decrypt(buffer.take(length).toByteArray())
+                        else decrypt(buffer + endBuffer.take(endLength).toByteArray())
+                }
+            }
+            parts.add(Pair(position + startOffset, data))
+            position += potionSize
+        }
+        return parts
     }
 
     override fun close() {
@@ -207,5 +231,7 @@ class SymmetricEncrypterContext(
 
     companion object {
         private const val AMOUNT_OF_BLOCKS_TO_READ = 256
+        private const val MEMORY_LIMIT_SIZE = 1024 * 256
+        private const val PROGRESS_SECTION_THAT_TAKES_ENCRYPTION = 50
     }
 }

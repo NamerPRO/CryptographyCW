@@ -12,8 +12,8 @@ class ChatMessageSentItemImageViewHolder(
         image: Uri,
         date: String
     ) {
-        binding.image.setImageURI(image)
         binding.date.text = date
+        binding.image.setImageURI(image)
     }
 
 }

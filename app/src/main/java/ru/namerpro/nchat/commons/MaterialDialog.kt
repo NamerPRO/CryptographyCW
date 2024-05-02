@@ -23,6 +23,23 @@ fun showDialog(
     dialog.show()
 }
 
+fun showExitDialog(
+    context: Context,
+    title: String,
+    message: String,
+    action: () -> Unit = {}
+) {
+    val dialog = MaterialAlertDialogBuilder(context)
+        .setTitle(title)
+        .setMessage(message)
+        .setCancelable(false)
+        .setNeutralButton(context.getString(R.string.dialog_cancel_button)) { _, _ -> }
+        .setPositiveButton(context.getString(R.string.dialog_exit_button)) { _, _ ->
+            action.invoke()
+        }
+    dialog.show()
+}
+
 fun showUnclosableDialog(
     context: Context,
     title: String,

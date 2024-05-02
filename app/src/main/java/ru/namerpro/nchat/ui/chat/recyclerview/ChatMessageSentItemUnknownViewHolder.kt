@@ -1,18 +1,25 @@
 package ru.namerpro.nchat.ui.chat.recyclerview
 
+import android.media.MediaScannerConnection
+import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.RecyclerView
 import ru.namerpro.nchat.databinding.ChatMessageSentItemUnknownBinding
+import ru.namerpro.nchat.domain.model.Message
 
 class ChatMessageSentItemUnknownViewHolder(
     private val binding: ChatMessageSentItemUnknownBinding
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(
-        title: String,
-        date: String
+        message: Message.File,
+        download: (Message.File) -> Unit
     ) {
-        binding.title.text = title
-        binding.date.text = date
+        binding.title.text = message.realName
+        binding.date.text = message.date
+
+        binding.downloadSent.setOnClickListener {
+            download.invoke(message)
+        }
     }
 
 }

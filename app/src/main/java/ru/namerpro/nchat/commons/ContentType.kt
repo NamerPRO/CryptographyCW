@@ -1,14 +1,14 @@
 package ru.namerpro.nchat.commons
 
-import android.webkit.MimeTypeMap
 import ru.namerpro.nchat.domain.model.Message
+
+const val UNKNOWN_CONTENT = Message.MESSAGE_FILE_CODE
 
 fun getContentType(
     type: String
 ): Int {
-    return if (MimeTypeMap.getSingleton().getMimeTypeFromExtension(type)?.startsWith("image") == true) {
-        Message.MESSAGE_IMAGE_CODE
-    } else {
-        Message.MESSAGE_FILE_CODE
+    return when (type) {
+        "png", "bmp", "jpg", "jpeg" -> Message.MESSAGE_IMAGE_CODE
+        else -> Message.MESSAGE_FILE_CODE
     }
 }

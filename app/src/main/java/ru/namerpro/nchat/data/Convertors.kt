@@ -2,41 +2,68 @@ package ru.namerpro.nchat.data
 
 import com.google.gson.Gson
 import ru.namerpro.nchat.commons.Constants
-import ru.namerpro.nchat.commons.Constants.Companion.ENCRYPTED_FILE_PREFIX
-import ru.namerpro.nchat.commons.Constants.Companion.SUCCESS_RESPONSE_CODE
-import ru.namerpro.nchat.data.dto.response.DownloadFileResponse
+import ru.namerpro.nchat.data.db.ChatEntity
+import ru.namerpro.nchat.data.db.MessageEntity
 import ru.namerpro.nchat.domain.entities.ciphers.context.SymmetricEncrypterContext
+import ru.namerpro.nchat.domain.model.Chat
+import ru.namerpro.nchat.domain.model.Cipher
 import ru.namerpro.nchat.domain.model.Message
-import ru.namerpro.nchat.domain.model.Message.Companion.MESSAGE_CONVERSATION_END_CODE
-import ru.namerpro.nchat.domain.model.Message.Companion.MESSAGE_TEXT_CODE
 import java.util.Base64
 
-class Convertors(
-    private val networkClient: NetworkClient
-) {
+class Convertors {
 
-    suspend fun messageFromString(
+    fun messageFromString(
         messageAsString: String,
         encrypter: SymmetricEncrypterContext
     ): Message {
         if (messageAsString[0] == Constants.EXIT_MESSAGE_CODE) {
             return Message.ChatEnd
         }
-        val data = Gson().fromJson(String(encrypter.decrypt(Base64.getDecoder().decode(messageAsString.substring(2, messageAsString.length - 1))).get()), Message.Data::class.java)
-        return when (data.contentType) {
-            MESSAGE_CONVERSATION_END_CODE -> Message.ChatEnd
-            MESSAGE_TEXT_CODE -> data
-            else -> {
-                val fileData = networkClient.downloadFile("${ENCRYPTED_FILE_PREFIX}${data.text}")
-                if (fileData.responseCode == SUCCESS_RESPONSE_CODE) {
-                    fileData as DownloadFileResponse
-                    val type = data.text.takeLastWhile { it != '.' }
-                    Message.File(true, data.text, fileData.input, type, fileData.size, data.date, data.contentType)
-                } else {
-                    Message.FailedToLoadFile(data.contentType, data.date)
-                }
-            }
-        }
+        return Gson().fromJson(
+            String(
+                encrypter.decrypt(
+                    Base64.getDecoder()
+                        .decode(messageAsString.substring(2, messageAsString.length - 1))
+                ).get()
+            ), Message.Data::class.java
+        )
+    }
+
+    fun messageSerializer(
+        message: Message
+    ) = Gson().toJson(message)
+
+    fun messageDeserializer(
+        serializedMessage: String
+    ) = Gson().fromJson(serializedMessage, Message.Data::class.java)
+
+    fun chatToChatEntity(
+        chat: Chat
+    ): ChatEntity {
+        val encoder = Base64.getEncoder()
+        return ChatEntity(
+            0,
+            chat.id,
+            chat.name,
+            chat.partnerName,
+            chat.cipher.name,
+            encoder.encodeToString(chat.key),
+            encoder.encodeToString(chat.iv)
+        )
+    }
+
+    fun chatEntityToChat(
+        chatEntity: ChatEntity
+    ): Chat {
+        val decoder = Base64.getDecoder()
+        return Chat(
+            chatEntity.chatId,
+            chatEntity.name,
+            chatEntity.partnerName,
+            Cipher.fromString(chatEntity.cipher),
+            decoder.decode(chatEntity.key),
+            decoder.decode(chatEntity.iv)
+        )
     }
 
 }

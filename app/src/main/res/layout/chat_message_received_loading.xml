@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chat_message_sent_item_unknown"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:weightSum="5"
+    android:paddingBottom="15dp"
+    android:baselineAligned="false">
+
+    <LinearLayout
+        android:id="@+id/loading_sent_unknown"
+        android:layout_weight="3"
+        android:layout_width="0dp"
+        android:orientation="vertical"
+        android:layout_marginStart="20dp"
+        android:padding="10dp"
+        android:gravity="center"
+        android:background="@drawable/shape_border_message_recieved"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/downloading_text"
+            style="@style/StandardText"/>
+
+        <ProgressBar
+            android:id="@+id/receive_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_gravity="center"
+            android:max="100"
+            android:progress="0"
+            tools:progress="30"
+            android:progressTint="@color/blue"
+            android:progressBackgroundTint="@color/black"
+            android:indeterminateTint="@color/gray"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/cancel_task"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/StandardText"
+            android:textColor="@color/white"
+            android:text="@string/cancel_uploading"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="2"/>
+
+</LinearLayout>

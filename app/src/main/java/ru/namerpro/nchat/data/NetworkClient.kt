@@ -1,9 +1,8 @@
 package ru.namerpro.nchat.data
 
-import android.net.Uri
 import ru.namerpro.nchat.data.dto.Response
 import ru.namerpro.nchat.data.dto.dto.ChatInfoDto
-import ru.namerpro.nchat.domain.model.Message
+import ru.namerpro.nchat.domain.model.Task
 import java.io.File
 
 interface NetworkClient {
@@ -50,6 +49,7 @@ interface NetworkClient {
     ): Response
 
     suspend fun uploadFile(
+        task: Task,
         clientId: Long,
         chatId: Long,
         file: File,
@@ -57,6 +57,8 @@ interface NetworkClient {
     ): Response
 
     suspend fun downloadFile(
+        task: Task,
+        pathToFolder: String,
         fileName: String
     ): Response
 

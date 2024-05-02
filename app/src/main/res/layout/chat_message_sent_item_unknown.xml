@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/chat_message_sent_item_unknown"
     android:orientation="horizontal"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -15,11 +16,12 @@
         android:layout_weight="2"/>
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:id="@+id/loaded_sent_unknown"
         android:layout_weight="3"
+        android:layout_width="0dp"
+        android:orientation="horizontal"
         android:layout_marginEnd="20dp"
         android:padding="10dp"
-        android:layout_width="0dp"
         android:background="@drawable/shape_border_message_sent"
         android:layout_height="wrap_content">
 
@@ -29,6 +31,7 @@
             app:cardCornerRadius="20dp">
 
             <ImageButton
+                android:id="@+id/download_sent"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:background="@color/dirty_white"
@@ -62,6 +65,8 @@
                 android:paddingTop="5dp"
                 android:paddingEnd="5dp"
                 android:paddingStart="5dp"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_light"
                 tools:text="16:51 (22.04.2024)"/>
 
         </LinearLayout>

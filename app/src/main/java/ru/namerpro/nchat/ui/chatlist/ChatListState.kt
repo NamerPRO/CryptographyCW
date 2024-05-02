@@ -8,4 +8,8 @@ sealed interface ChatListState {
         val chats: List<Chat>
     ) : ChatListState
 
+    data class ChatsRestoreFromDb(
+        val chats: List<Chat>
+    ) : ChatListState
+
 }

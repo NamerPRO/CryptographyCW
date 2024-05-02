@@ -29,7 +29,7 @@ class ChatManagerRepositoryImpl(
                         it.partnerName,
                         it.partnerId,
                         BigInteger(Base64.getDecoder()
-                            .decode(it.secret.substring(1, it.secret.length - 1))),
+                            .decode(it.secret)),
                         Cipher.fromString(it.cipherType),
                         Base64.getDecoder().decode(it.iv)
                     )
