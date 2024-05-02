@@ -2,16 +2,15 @@ package ru.namerpro.nchat.data.network
 
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
-import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Streaming
-import ru.namerpro.nchat.data.dto.dto.NewChatsDataDto
-import ru.namerpro.nchat.data.dto.dto.ClientDto
 import ru.namerpro.nchat.data.dto.dto.ChatInfoDto
+import ru.namerpro.nchat.data.dto.dto.ClientDto
+import ru.namerpro.nchat.data.dto.dto.NewChatsDataDto
 import ru.namerpro.nchat.data.dto.dto.SecretKeyDto
 
 interface NChatServiceApi {

@@ -1,18 +1,14 @@
 package ru.namerpro.nchat.data.network
 
 import android.app.Application
-import android.os.Environment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import retrofit2.HttpException
-import ru.namerpro.nchat.commons.Constants
 import ru.namerpro.nchat.commons.ResponseBodyListener
 import ru.namerpro.nchat.commons.downloadToFileWithProgress
 import ru.namerpro.nchat.commons.getDownloader
-import ru.namerpro.nchat.commons.saveFileInCache
 import ru.namerpro.nchat.data.NetworkClient
 import ru.namerpro.nchat.data.dto.Response
 import ru.namerpro.nchat.data.dto.dto.ChatInfoDto

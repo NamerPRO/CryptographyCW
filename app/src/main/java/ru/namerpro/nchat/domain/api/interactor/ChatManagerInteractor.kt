@@ -3,7 +3,6 @@ package ru.namerpro.nchat.domain.api.interactor
 import ru.namerpro.nchat.domain.model.ChatInfo
 import ru.namerpro.nchat.domain.model.NewChatData
 import ru.namerpro.nchat.domain.model.Resource
-import java.math.BigInteger
 
 interface ChatManagerInteractor {
 

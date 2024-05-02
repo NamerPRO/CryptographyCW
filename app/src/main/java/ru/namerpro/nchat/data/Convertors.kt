@@ -3,7 +3,6 @@ package ru.namerpro.nchat.data
 import com.google.gson.Gson
 import ru.namerpro.nchat.commons.Constants
 import ru.namerpro.nchat.data.db.ChatEntity
-import ru.namerpro.nchat.data.db.MessageEntity
 import ru.namerpro.nchat.domain.entities.ciphers.context.SymmetricEncrypterContext
 import ru.namerpro.nchat.domain.model.Chat
 import ru.namerpro.nchat.domain.model.Cipher

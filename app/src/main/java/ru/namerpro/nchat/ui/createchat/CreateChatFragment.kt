@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -18,7 +17,6 @@ import ru.namerpro.nchat.commons.showDialog
 import ru.namerpro.nchat.databinding.FragmentCreateChatBinding
 import ru.namerpro.nchat.domain.model.Client
 import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_ID
-import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_NAME
 
 class CreateChatFragment : Fragment() {
 

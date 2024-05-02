@@ -1,6 +1,5 @@
 package ru.namerpro.nchat.domain.api.interactor
 
-import android.net.Uri
 import ru.namerpro.nchat.domain.entities.ciphers.context.SymmetricEncrypterContext
 import ru.namerpro.nchat.domain.model.Message
 import ru.namerpro.nchat.domain.model.Resource

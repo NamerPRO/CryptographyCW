@@ -6,7 +6,6 @@ import ru.namerpro.nchat.domain.api.repository.ChatManagerRepository
 import ru.namerpro.nchat.domain.model.ChatInfo
 import ru.namerpro.nchat.domain.model.NewChatData
 import ru.namerpro.nchat.domain.model.Resource
-import java.math.BigInteger
 import java.util.Base64
 
 class ChatManagerInteractorImpl(

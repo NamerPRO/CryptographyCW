@@ -1,7 +1,5 @@
 package ru.namerpro.nchat.ui.chat.recyclerview
 
-import android.media.MediaScannerConnection
-import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.RecyclerView
 import ru.namerpro.nchat.databinding.ChatMessageSentItemUnknownBinding
 import ru.namerpro.nchat.domain.model.Message

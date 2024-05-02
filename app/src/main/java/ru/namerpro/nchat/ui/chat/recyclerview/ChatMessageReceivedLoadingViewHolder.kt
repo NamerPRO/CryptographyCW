@@ -1,10 +1,8 @@
 package ru.namerpro.nchat.ui.chat.recyclerview
 
-import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelChildren
 import ru.namerpro.nchat.databinding.ChatMessageReceivedLoadingBinding
 import kotlin.math.roundToInt
 
