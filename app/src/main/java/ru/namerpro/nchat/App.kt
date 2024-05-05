@@ -14,7 +14,6 @@ class App : Application() {
             kotlinx.coroutines.DEBUG_PROPERTY_NAME,
             kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
         )
-
         super.onCreate()
         startKoin {
             androidContext(this@App)

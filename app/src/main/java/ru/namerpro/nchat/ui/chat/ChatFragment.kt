@@ -13,25 +13,32 @@ import android.provider.OpenableColumns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
+import org.koin.android.BuildConfig
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.namerpro.nchat.R
 import ru.namerpro.nchat.commons.Constants
 import ru.namerpro.nchat.commons.Constants.Companion.MAXIMUM_UPLOAD_AMOUNT_AT_THE_SAME_TIME
+import ru.namerpro.nchat.commons.Constants.Companion.PROVIDER_AUTHORITIES
 import ru.namerpro.nchat.commons.Constants.Companion.RC5_STANDARD_BLOCK_LENGTH_IN_BITS
 import ru.namerpro.nchat.commons.Constants.Companion.RC5_STANDARD_ROUNDS_COUNT
 import ru.namerpro.nchat.commons.Constants.Companion.STANDARD_KEY_SIZE_IN_BYTES
 import ru.namerpro.nchat.commons.Constants.Companion.STANDARD_MAGENTA_PRIMITIVE_ELEMENT
 import ru.namerpro.nchat.commons.composedImageUri
 import ru.namerpro.nchat.commons.getContentType
+import ru.namerpro.nchat.commons.getFileName
 import ru.namerpro.nchat.commons.getFileType
 import ru.namerpro.nchat.commons.parentPath
 import ru.namerpro.nchat.commons.showDialog
@@ -45,8 +52,11 @@ import ru.namerpro.nchat.domain.model.Chat
 import ru.namerpro.nchat.domain.model.Cipher
 import ru.namerpro.nchat.domain.model.Message
 import ru.namerpro.nchat.ui.chat.recyclerview.ChatAdapter
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CAN_EXIT
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_ID
 import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_NAME
-import ru.namerpro.nchat.ui.root.RootViewModel.Companion.DOWNLOAD_NOTINIFCTION_ID
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.DOWNLOAD_NOTIFICATION_ID
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.READY_CHATS
 import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
@@ -116,7 +126,7 @@ class ChatFragment : Fragment() {
             composedImageUri(it.devicePath ?: "", requireActivity().application)
         }
         val download: (Message.File) -> Unit = {
-            val currentNotificationId = DOWNLOAD_NOTINIFCTION_ID++
+            val currentNotificationId = DOWNLOAD_NOTIFICATION_ID++
             val downloadFolderPath = "${Environment.getExternalStorageDirectory()}${File.separator}${Environment.DIRECTORY_DOWNLOADS}${File.separator}${Constants.DOWNLOADS_FOLDER_NAME}${File.separator}"
             var totalProgress = 0.0
             viewModel.downloadOnClick(it, downloadFolderPath, encrypter) { it2 ->
@@ -138,7 +148,17 @@ class ChatFragment : Fragment() {
                 }
             }
         }
-        messagesAdapter = ChatAdapter(arrayListOf(), toUri, download)
+        messagesAdapter = ChatAdapter(arrayListOf(), toUri, download) {
+            if (it.devicePath != null) {
+                CAN_EXIT = false
+                val intent = Intent().apply {
+                    action = Intent.ACTION_VIEW
+                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    setDataAndType(FileProvider.getUriForFile(requireContext(), PROVIDER_AUTHORITIES, File(it.devicePath!!)), "image/*")
+                }
+                startActivity(intent)
+            }
+        }
 
         binding?.chat?.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -151,12 +171,18 @@ class ChatFragment : Fragment() {
                 val date = SimpleDateFormat("HH:mm (dd/MM/yyyy)", Locale.getDefault()).format(Date())
                 val pickedFileInfo = getPickedFileNameAndSize(pickedFileUri)
                 val inputStream = requireActivity().contentResolver.openInputStream(pickedFileUri)
-                val fileMessage = createAndDisplayFileObject(null, false, date, pickedFileInfo.second, Pair(pickedFileInfo.first, inputStream))
+                val fileMessage = createAndDisplayFileObject(null, false, date, System.currentTimeMillis(), pickedFileInfo.second, Pair(pickedFileInfo.first, inputStream))
                 ++viewModel.sendingFilesCounter
+                var lastProgressUpdateTime = 0L
                 viewModel.sendFile(chat.id, fileMessage, encrypter) { addition ->
                     activity?.runOnUiThread {
                         fileMessage.progress = min(fileMessage.progress + addition, Constants.END_PROGRESS)
-                        messagesAdapter?.notifyDataSetChanged()
+                        val newPossibleUpdateTime = System.currentTimeMillis()
+                        if (newPossibleUpdateTime - lastProgressUpdateTime > Constants.PROGRESS_UPDATE_TIME
+                                || fileMessage.progress == Constants.END_PROGRESS) {
+                            lastProgressUpdateTime = newPossibleUpdateTime
+                            messagesAdapter?.notifyDataSetChanged()
+                        }
                     }
                 }
             }
@@ -164,6 +190,7 @@ class ChatFragment : Fragment() {
 
         binding?.attachResource?.setOnClickListener {
             if (viewModel.sendingFilesCounter < MAXIMUM_UPLOAD_AMOUNT_AT_THE_SAME_TIME) {
+                CAN_EXIT = false
                 contentPicker.launch(
                     Intent(Intent.ACTION_GET_CONTENT).apply {
                         type = "*/*"
@@ -177,8 +204,6 @@ class ChatFragment : Fragment() {
         viewModel.observeChat().observe(viewLifecycleOwner) {
             render(it)
         }
-
-        viewModel.getMessages(chat.id, encrypter)
 
         binding?.chatName?.text = chat.name
         binding?.partner?.text = getString(R.string.chat_partner, chat.partnerName)
@@ -194,7 +219,7 @@ class ChatFragment : Fragment() {
                 Toast.makeText(requireContext(), getString(R.string.invalid_message), Toast.LENGTH_SHORT).show()
             } else {
                 val date = SimpleDateFormat("HH:mm (dd/MM/yyyy)", Locale.getDefault()).format(Date())
-                val message = Message.Data(messageText, date, true, Message.MESSAGE_TEXT_CODE)
+                val message = Message.Data(messageText, date, System.currentTimeMillis(), true, Message.MESSAGE_TEXT_CODE)
                 viewModel.sendMessage(chat.id, message, encrypter)
             }
         }
@@ -208,6 +233,12 @@ class ChatFragment : Fragment() {
         })
 
         binding?.chatName?.isSelected = true
+
+        binding?.leaveChat?.setOnClickListener {
+            showExitDialog(requireContext(), getString(R.string.exist_chat_dialog_title), getString(R.string.exist_chat_dialog_text)) {
+                viewModel.leaveChat(chat.id, CLIENT_ID)
+            }
+        }
     }
 
     private fun alertIfNotAllFilesLoaded() {
@@ -288,8 +319,35 @@ class ChatFragment : Fragment() {
             is ChatState.FileNotReceived -> onFileNotReceived(state.fileMessage)
             is ChatState.FileAlreadyDownloadedOnClick -> Toast.makeText(requireContext(), getString(R.string.file_already_downloaded_on_click), Toast.LENGTH_SHORT).show()
             is ChatState.FileDownloadFailedOnClick -> Toast.makeText(requireContext(), getString(R.string.file_download_failed_on_click), Toast.LENGTH_SHORT).show()
-            is ChatState.MessagesSuccessfullyLoadedFromDb -> showMessages(state.messages)
+            is ChatState.MessagesSuccessfullyLoadedFromDb -> {
+                showMessages(state.messages, true)
+                viewModel.getMessages(chat.id, encrypter)
+            }
+            is ChatState.SuccessfullyLeavedChat -> onSuccessfullyLeavedChat()
         }
+    }
+
+    private fun disableMessageSubmit() {
+        viewModel.isChatAlive = false
+        chat.isAlive = false
+        binding?.sendBlock?.isVisible = false
+
+        val layoutParams = binding?.chat?.layoutParams as MarginLayoutParams
+        layoutParams.setMargins(0, 0, 0, 0)
+        binding?.chat?.layoutParams = layoutParams
+
+        binding?.leaveChat?.isVisible = false
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun onSuccessfullyLeavedChat() {
+        disableMessageSubmit()
+        READY_CHATS.find { it.id == chat.id }?.isAlive = false
+        viewModel.markChatNotAlive(chat.id)
+        val chatEndMessage = Message.ChatEnd(System.currentTimeMillis())
+        viewModel.addMessagesToDataBase(chat.id, listOf(chatEndMessage), true)
+        messagesAdapter?.messages?.add(chatEndMessage)
+        messagesAdapter?.notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -333,10 +391,11 @@ class ChatFragment : Fragment() {
         devicePath: String?,
         isReceived: Boolean,
         date: String,
+        time: Long,
         realName: String,
         fileInfo: Pair<Long, InputStream?>?
     ): Message.File {
-        val message = Message.File(devicePath, realName, date, isReceived, getContentType(getFileType(realName)), fileInfo, Constants.START_PROGRESS)
+        val message = Message.File(devicePath, realName, date, time, isReceived, getContentType(getFileType(realName)), fileInfo, Constants.START_PROGRESS)
         messagesAdapter?.messages?.add(message)
         messagesAdapter?.notifyDataSetChanged()
         scrollToBottom()
@@ -347,24 +406,28 @@ class ChatFragment : Fragment() {
     private fun onSuccessfullySendMessage(
         message: Message.Data
     ) {
-        viewModel.addMessagesToDataBase(chat.id, listOf(message))
+        viewModel.addMessagesToDataBase(chat.id, listOf(message), true)
         messagesAdapter?.messages?.add(message)
         messagesAdapter?.notifyDataSetChanged()
         viewModel.removeTempFiles(listOf(message))
         scrollToBottom()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun showMessages(
-        messages: List<Message>
+        messages: List<Message>,
+        fromDb: Boolean
     ) {
         messages.forEach {
             when (it.type) {
                 Message.MESSAGE_TEXT_CODE -> displayTextMessage(it as Message.Data)
                 Message.MESSAGE_IMAGE_CODE -> displayImageMessage(it as Message.Data)
                 Message.MESSAGE_FILE_CODE -> displayFile(it as Message.Data)
-                Message.MESSAGE_CONVERSATION_END_CODE -> endConversation()
+                Message.MESSAGE_CONVERSATION_END_CODE -> endConversation(fromDb)
             }
         }
+        messagesAdapter?.messages?.sortBy { it.time }
+        messagesAdapter?.notifyDataSetChanged()
         viewModel.removeTempFiles(messages)
         scrollToBottom()
     }
@@ -373,8 +436,8 @@ class ChatFragment : Fragment() {
         messages: List<Message>
     ) {
         if (chat.partnerName != CLIENT_NAME && messages.isNotEmpty()) {
-            viewModel.addMessagesToDataBase(chat.id, messages)
-            showMessages(messages)
+            viewModel.addMessagesToDataBase(chat.id, messages, false)
+            showMessages(messages, false)
         }
     }
 
@@ -384,7 +447,7 @@ class ChatFragment : Fragment() {
     ) {
         val names = message.text.split('|', limit = 2)
         val devicePath = "${Environment.DIRECTORY_DOWNLOADS}${File.separator}${names[0]}"
-        val fileMessage = Message.File(devicePath, names[1], message.date, message.isReceived, message.contentType, null, Constants.END_PROGRESS)
+        val fileMessage = Message.File(devicePath, names[1], message.date, message.time, message.isReceived, message.contentType, null, Constants.END_PROGRESS)
         messagesAdapter?.messages?.add(fileMessage)
         messagesAdapter?.notifyDataSetChanged()
     }
@@ -398,9 +461,16 @@ class ChatFragment : Fragment() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun endConversation() {
-        messagesAdapter?.messages?.add(Message.ChatEnd)
-        messagesAdapter?.notifyDataSetChanged()
+    private fun endConversation(
+        fromDb: Boolean
+    ) {
+        if (fromDb) {
+            disableMessageSubmit()
+            messagesAdapter?.messages?.add(Message.ChatEnd(System.currentTimeMillis()))
+            messagesAdapter?.notifyDataSetChanged()
+        } else {
+            viewModel.leaveChat(chat.id, CLIENT_ID)
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -409,11 +479,17 @@ class ChatFragment : Fragment() {
     ) {
         val names = message.text.split('|', limit = 2)
         val devicePath = "${requireActivity().externalCacheDir}${File.separator}${names[0]}"
-        val fileMessage = createAndDisplayFileObject(devicePath, message.isReceived, message.date, names[1], null)
+        val fileMessage = createAndDisplayFileObject(devicePath, message.isReceived, message.date, message.messageTime, names[1], null)
+        var progressUpdateTime = 0L
         viewModel.downloadFile(fileMessage, parentPath(fileMessage.devicePath), encrypter) { addition ->
             activity?.runOnUiThread {
                 fileMessage.progress = min(fileMessage.progress + addition, Constants.END_PROGRESS)
-                messagesAdapter?.notifyDataSetChanged()
+                val newPossibleUpdateTime = System.currentTimeMillis()
+                if (newPossibleUpdateTime - progressUpdateTime > Constants.PROGRESS_UPDATE_TIME
+                        || fileMessage.progress == Constants.END_PROGRESS) {
+                    progressUpdateTime = newPossibleUpdateTime
+                    messagesAdapter?.notifyDataSetChanged()
+                }
             }
         }
     }

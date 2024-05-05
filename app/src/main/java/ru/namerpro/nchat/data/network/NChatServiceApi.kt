@@ -3,6 +3,7 @@ package ru.namerpro.nchat.data.network
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -68,6 +69,7 @@ interface NChatServiceApi {
     @Multipart
     @POST("/upload_file/{client_id}/{chat_id}")
     suspend fun uploadFile(
+        @Header("Full-File-Length") fullFileLength: Long,
         @Path("client_id") clientId: Long,
         @Path("chat_id") chatId: Long,
         @Part file: MultipartBody.Part,
@@ -79,5 +81,16 @@ interface NChatServiceApi {
     suspend fun downloadFile(
         @Path("file_name") fileName: String
     ): ResponseBody
+
+    @POST("/leave_chat/{client_id}/{chat_id}")
+    suspend fun leaveChat(
+        @Path("client_id") clientId: Long,
+        @Path("chat_id") chatId: Long
+    )
+
+    @POST("/deinitialize/{client_id}")
+    suspend fun deinitialize(
+        @Path("client_id") clientId: Long
+    )
 
 }

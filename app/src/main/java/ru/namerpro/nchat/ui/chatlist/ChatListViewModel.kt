@@ -1,20 +1,28 @@
 package ru.namerpro.nchat.ui.chatlist
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.namerpro.nchat.commons.Constants.Companion.FIELD_NOT_INITIALIZED
 import ru.namerpro.nchat.commons.Constants.Companion.PING_DELAY_MS
 import ru.namerpro.nchat.commons.SingleLiveEvent
+import ru.namerpro.nchat.domain.api.interactor.ChatManagerInteractor
 import ru.namerpro.nchat.domain.api.interactor.ChatsDatabaseInteractor
+import ru.namerpro.nchat.domain.api.interactor.MessagesDatabaseInteractor
 import ru.namerpro.nchat.domain.model.Chat
+import ru.namerpro.nchat.domain.model.Message
 import ru.namerpro.nchat.ui.root.RootViewModel
 import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CLIENT_ID
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.READY_CHATS
 
 class ChatListViewModel(
+    private val chatManagerInteractor: ChatManagerInteractor,
+    private val messagesDatabaseInteractor: MessagesDatabaseInteractor,
     private val chatsDatabaseInteractor: ChatsDatabaseInteractor
 ) : ViewModel() {
 
@@ -39,6 +47,7 @@ class ChatListViewModel(
                             createdChats.add(
                                 Chat(
                                     data.key,
+                                    true,
                                     data.value.chatName!!,
                                     data.value.partnerName!!,
                                     data.value.cipher!!,
@@ -62,9 +71,12 @@ class ChatListViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val chats = chatsDatabaseInteractor.getChats()
                 .sortedByDescending { it.id }
+            READY_CHATS.addAll(chats)
             chatsStateLiveData.postValue(ChatListState.ChatsRestoreFromDb(chats))
         }
     }
+
+
 
     fun addChatsToDb(
         chats: List<Chat>

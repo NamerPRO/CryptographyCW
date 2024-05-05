@@ -18,6 +18,8 @@ val viewModelModule = module {
 
     viewModel {
         RootViewModel(
+            chatsDatabaseInteractor = get(),
+            messagesDatabaseInteractor = get(),
             chatManagerInteractor = get(),
             secretKeyInteractor = get(),
             initializedClientsInteractor = get()
@@ -26,14 +28,18 @@ val viewModelModule = module {
 
     viewModel {
         ChatListViewModel(
+            chatManagerInteractor = get(),
+            messagesDatabaseInteractor = get(),
             chatsDatabaseInteractor = get()
         )
     }
 
     viewModel {
         ChatViewModel(
+            chatsDatabaseInteractor = get(),
             messagesInteractor = get(),
             messagesDatabaseInteractor = get(),
+            chatManagerInteractor = get(),
             application = get()
         )
     }

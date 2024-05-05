@@ -55,4 +55,16 @@ class ChatManagerRepositoryImpl(
         }
     }
 
+    override suspend fun leaveChat(
+        clientId: Long,
+        chatId: Long
+    ): Resource<Unit> {
+        val response = networkClient.leaveChat(clientId, chatId)
+        return if (response.responseCode == SUCCESS_RESPONSE_CODE) {
+            Resource.Success()
+        } else {
+            Resource.Error()
+        }
+    }
+
 }

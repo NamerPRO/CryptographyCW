@@ -10,4 +10,9 @@ interface ChatsDatabaseRepository {
 
     suspend fun getChats(): List<Chat>
 
+    suspend fun updateAliveState(
+        chatId: Long,
+        isAlive: Boolean
+    )
+
 }

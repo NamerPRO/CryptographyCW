@@ -2,6 +2,7 @@ package ru.namerpro.nchat.domain.model
 
 data class Chat(
     val id: Long,
+    var isAlive: Boolean,
     val name: String,
     val partnerName: String,
     val cipher: Cipher,
@@ -15,6 +16,7 @@ data class Chat(
 
         other as Chat
 
+        if (isAlive != other.isAlive) return false
         if (id != other.id) return false
         if (name != other.name) return false
         if (partnerName != other.partnerName) return false
@@ -24,7 +26,8 @@ data class Chat(
     }
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
+        var result = isAlive.hashCode()
+        result = 31 * result + id.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + partnerName.hashCode()
         result = 31 * result + cipher.hashCode()

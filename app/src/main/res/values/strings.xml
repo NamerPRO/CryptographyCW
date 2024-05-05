@@ -53,7 +53,7 @@
     <string name="invalid_message">Сообщение должно содержать текст и не может состоять из одних пробелов</string>
     <string name="suffix_after_your_client_name"> (Вы)</string>
     <string name="chat_ended">Переписка прекращена!</string>
-    <string name="chat_ended_reason">Собеседник покинул чат</string>
+    <string name="chat_ended_reason">Вы больше не можете писать в этот чат</string>
     <string name="uploading_text">Загружаем…</string>
     <string name="cancel_uploading">Отменить операцию</string>
     <string name="cancel_downloading">Отменить операцию</string>
@@ -64,8 +64,8 @@
     <string name="too_many_files_uploaded_text">Слишком много независимых файлов сейчас уже отправляются на сервер. Пожалуйста, подождите, пока отправится хотя бы один из них и повторите попытку.\n\nВы также можете сгруппировать все ваши файлы в архив и отправить за один раз…</string>
     <string name="are_you_sure_title">Вы уверены?</string>
     <string name="are_you_sure_text">Если выйти сейчас, то отправка всех еще не отправленных файлов будет прервана.</string>
-    <string name="upload_cancelled">Сообщение не отправлено</string>
-    <string name="download_cancelled">Сообщение не полчено</string>
+    <string name="upload_cancelled">Сообщение не загружено</string>
+    <string name="download_cancelled">Сообщение не загружено</string>
     <string name="failed_to_get_messages">Не удалось получить сообщения…</string>
     <string name="download_notification_title">Скачиваем "%1$s"</string>
     <string name="download_notification_text">Прогресс: %1$d%%</string>
@@ -73,4 +73,6 @@
     <string name="download_notification_text_on_load_end">Файл "%1$s" сохранен в downloads/%2$s</string>
     <string name="file_already_downloaded_on_click">Файл с таким именем уже находится в папке downloads/nchat</string>
     <string name="file_download_failed_on_click">Не удалось загрузить файл!</string>
+    <string name="exist_chat_dialog_title">Покинуть чат?</string>
+    <string name="exist_chat_dialog_text">Если Вы покините чат сейчас, то больше никогда не сможете писать в нем.\n\nВаш собеседник также никогда больше не сможет писать Вам…</string>
 </resources>

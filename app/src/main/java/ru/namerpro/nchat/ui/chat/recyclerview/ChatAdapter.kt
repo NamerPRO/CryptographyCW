@@ -22,7 +22,8 @@ import ru.namerpro.nchat.domain.model.Message
 class ChatAdapter(
     val messages: ArrayList<Message>,
     private val toUri: (Message.File) -> Uri,
-    private val download: (Message.File) -> Unit
+    private val download: (Message.File) -> Unit,
+    private val showInGallery: (Message.File) -> Unit
 ) : RecyclerView.Adapter<ViewHolder>() {
 
     override fun onCreateViewHolder(
@@ -66,7 +67,7 @@ class ChatAdapter(
                 holder as ChatMessageSentItemImageViewHolder
                 message as Message.File
 
-                holder.bind(toUri(message), message.date)
+                holder.bind(toUri(message), message, showInGallery)
             }
             SENT_UNKNOWN -> {
                 holder as ChatMessageSentItemUnknownViewHolder
@@ -84,7 +85,7 @@ class ChatAdapter(
                 holder as ChatMessageReceivedItemImageViewHolder
                 message as Message.File
 
-                holder.bind(toUri(message), message.date)
+                holder.bind(toUri(message), message, showInGallery)
             }
             RECEIVED_UNKNOWN -> {
                 holder as ChatMessageReceivedItemUnknownViewHolder
@@ -96,13 +97,13 @@ class ChatAdapter(
                 holder as ChatMessageSentLoadingViewHolder
                 message as Message.File
 
-                holder.bind(message.progress, message.coroutineScope)
+                holder.bind(message.progress, message.task)
             }
             RECEIVED_LOADING -> {
                 holder as ChatMessageReceivedLoadingViewHolder
                 message as Message.File
 
-                holder.bind(message.progress, message.coroutineScope)
+                holder.bind(message.progress, message.task)
             }
             RECEIVED_CANCELLED -> { /* EMPTY */ }
             SENT_CANCELLED -> { /* EMPTY */ }

@@ -7,7 +7,9 @@ import ru.namerpro.nchat.domain.entities.ciphers.context.SymmetricEncrypterConte
 import ru.namerpro.nchat.domain.model.Chat
 import ru.namerpro.nchat.domain.model.Cipher
 import ru.namerpro.nchat.domain.model.Message
+import java.text.SimpleDateFormat
 import java.util.Base64
+import java.util.Locale
 
 class Convertors {
 
@@ -16,7 +18,7 @@ class Convertors {
         encrypter: SymmetricEncrypterContext
     ): Message {
         if (messageAsString[0] == Constants.EXIT_MESSAGE_CODE) {
-            return Message.ChatEnd
+            return Message.ChatEnd(System.currentTimeMillis())
         }
         return Gson().fromJson(
             String(
@@ -30,19 +32,24 @@ class Convertors {
 
     fun messageSerializer(
         message: Message
-    ) = Gson().toJson(message)
+    ): String = Gson().toJson(message)
 
     fun messageDeserializer(
+        contentType: Int,
         serializedMessage: String
-    ) = Gson().fromJson(serializedMessage, Message.Data::class.java)
+    ): Message = if (contentType == Message.MESSAGE_CONVERSATION_END_CODE) {
+        Gson().fromJson(serializedMessage, Message.ChatEnd::class.java)
+    } else {
+        Gson().fromJson(serializedMessage, Message.Data::class.java)
+    }
 
     fun chatToChatEntity(
         chat: Chat
     ): ChatEntity {
         val encoder = Base64.getEncoder()
         return ChatEntity(
-            0,
             chat.id,
+            chat.isAlive,
             chat.name,
             chat.partnerName,
             chat.cipher.name,
@@ -57,6 +64,7 @@ class Convertors {
         val decoder = Base64.getDecoder()
         return Chat(
             chatEntity.chatId,
+            chatEntity.isAlive,
             chatEntity.name,
             chatEntity.partnerName,
             Cipher.fromString(chatEntity.cipher),

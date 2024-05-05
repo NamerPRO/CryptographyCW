@@ -15,4 +15,8 @@ interface InitializedClientsInteractor {
         clientName: String
     ): Resource<Long>
 
+    suspend fun deinitialize(
+        clientId: Long
+    ): Resource<Unit>
+
 }

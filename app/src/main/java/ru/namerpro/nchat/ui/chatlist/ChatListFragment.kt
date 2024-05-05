@@ -16,6 +16,7 @@ import ru.namerpro.nchat.commons.debounce
 import ru.namerpro.nchat.databinding.FragmentChatListBinding
 import ru.namerpro.nchat.domain.model.Chat
 import ru.namerpro.nchat.ui.chat.ChatFragment
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.READY_CHATS
 
 class ChatListFragment : Fragment() {
 
@@ -53,7 +54,7 @@ class ChatListFragment : Fragment() {
             )
         }
 
-        chatListAdapter = ChatListAdapter(arrayListOf()) {
+        chatListAdapter = ChatListAdapter(READY_CHATS) {
             clickDebounce?.invoke(it)
         }
 
@@ -66,7 +67,9 @@ class ChatListFragment : Fragment() {
             render(it)
         }
 
-        viewModel.getChatsFromDb()
+        if (READY_CHATS.isEmpty()) {
+            viewModel.getChatsFromDb()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -81,7 +84,6 @@ class ChatListFragment : Fragment() {
                 chatListAdapter?.notifyDataSetChanged()
             }
             is ChatListState.ChatsRestoreFromDb -> {
-                chatListAdapter?.chats?.addAll(state.chats)
                 chatListAdapter?.notifyDataSetChanged()
             }
         }

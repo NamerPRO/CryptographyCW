@@ -1,8 +1,5 @@
 package ru.namerpro.nchat.data.network
 
-import android.os.Handler
-import android.os.Looper
-import kotlinx.coroutines.ensureActive
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
@@ -30,16 +27,14 @@ class CountingRequestBody(
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
         file.inputStream().use {
             var read: Int
-            val handler = Handler(Looper.getMainLooper())
             while (it.read(buffer).also { sz -> read = sz } != -1) {
-                task.coroutineScope.ensureActive()
-                handler.post {
-                    task.progress.invoke(50.0 * read / fileLength)
+                if (task.isCancelled) {
+                    return
                 }
+                task.progress.invoke(50.0 * read / fileLength)
                 sink.write(buffer, 0, read)
             }
         }
-        task.coroutineScope.ensureActive()
     }
 
 }

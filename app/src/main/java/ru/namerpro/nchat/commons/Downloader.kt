@@ -1,6 +1,5 @@
 package ru.namerpro.nchat.commons
 
-import kotlinx.coroutines.ensureActive
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Retrofit
@@ -15,7 +14,7 @@ fun interface ResponseBodyListener {
 
 fun getDownloader(
     listener: ResponseBodyListener
-) = Retrofit.Builder()
+): Retrofit = Retrofit.Builder()
     .baseUrl(API_BASE_URL)
     .client(initHttpDownloadListenerClient(listener))
     .build()
@@ -52,7 +51,10 @@ fun ResponseBody.downloadToFileWithProgress(
 
                 var length: Int
                 while (inputStream.read(data).also { length = it } != -1) {
-                    task.coroutineScope.ensureActive()
+                    if (task.isCancelled) {
+//                        file.delete()
+                        return
+                    }
                     outputStream.write(data, 0, length)
                     progressBytes += length
                     task.progress.invoke(50.0 * length / contentLength())

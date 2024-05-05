@@ -3,6 +3,7 @@ package ru.namerpro.nchat.ui.chat.recyclerview
 import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
 import ru.namerpro.nchat.databinding.ChatMessageReceivedItemImageBinding
+import ru.namerpro.nchat.domain.model.Message
 
 class ChatMessageReceivedItemImageViewHolder(
     private val binding: ChatMessageReceivedItemImageBinding
@@ -10,10 +11,14 @@ class ChatMessageReceivedItemImageViewHolder(
 
     fun bind(
         image: Uri,
-        date: String
+        message: Message.File,
+        showInGallery: (Message.File) -> Unit
     ) {
+        binding.date.text = message.date
         binding.image.setImageURI(image)
-        binding.date.text = date
+        binding.image.setOnClickListener {
+            showInGallery(message)
+        }
     }
 
 }

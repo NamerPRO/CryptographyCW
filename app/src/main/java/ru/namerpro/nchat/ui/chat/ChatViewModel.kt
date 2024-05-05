@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import ru.namerpro.nchat.commons.Constants.Companion.ENCRYPTED_FILE_PREFIX
 import ru.namerpro.nchat.commons.Constants.Companion.PING_DELAY_MS
@@ -18,6 +17,8 @@ import ru.namerpro.nchat.commons.getFileName
 import ru.namerpro.nchat.commons.getFileType
 import ru.namerpro.nchat.commons.parentPath
 import ru.namerpro.nchat.commons.saveFileInCache
+import ru.namerpro.nchat.domain.api.interactor.ChatManagerInteractor
+import ru.namerpro.nchat.domain.api.interactor.ChatsDatabaseInteractor
 import ru.namerpro.nchat.domain.api.interactor.MessagesDatabaseInteractor
 import ru.namerpro.nchat.domain.api.interactor.MessagesInteractor
 import ru.namerpro.nchat.domain.entities.ciphers.context.SymmetricEncrypterContext
@@ -31,8 +32,10 @@ import java.nio.file.Paths
 import java.util.UUID
 
 class ChatViewModel(
+    private val chatsDatabaseInteractor: ChatsDatabaseInteractor,
     private val messagesInteractor: MessagesInteractor,
     private val messagesDatabaseInteractor: MessagesDatabaseInteractor,
+    private val chatManagerInteractor: ChatManagerInteractor,
     private val application: Application
 ) : ViewModel() {
 
@@ -40,6 +43,10 @@ class ChatViewModel(
     fun observeChat(): LiveData<ChatState> = chatLiveData
 
     var sendingFilesCounter = 0
+
+    var isChatAlive = true
+
+    private var attemptsBeforeFailedToGetMessageLeft = STANDARD_ATTEMPTS_NUMBER
 
     fun sendMessage(
         chatId: Long,
@@ -65,13 +72,12 @@ class ChatViewModel(
     ) {
         viewModelScope.safeLaunch(Dispatchers.IO) {
             try {
-                message.coroutineScope = this
+                message.task = Task(onProgressChange, false)
                 val fileServerName = "${UUID.randomUUID()}.${getFileType(message.realName)}"
                 val cachedFile = saveFileInCache(fileServerName, message.file?.second, application)
                 message.file = Pair(message.file!!.first, cachedFile.inputStream())
                 message.devicePath = cachedFile.path
-                val resource = messagesInteractor.uploadEncryptedFile(CLIENT_ID, chatId, message, encrypter!!, Task(onProgressChange, this))
-                ensureActive()
+                val resource = messagesInteractor.uploadEncryptedFile(CLIENT_ID, chatId, message, encrypter!!, message.task!!)
                 if (resource is Resource.Success) {
                     Files.delete(Paths.get("${parentPath(message.devicePath)}${ENCRYPTED_FILE_PREFIX}${getFileName(message.devicePath)}"))
                     chatLiveData.postValue(ChatState.SuccessfullySendFile(message))
@@ -89,13 +95,19 @@ class ChatViewModel(
         encrypter: SymmetricEncrypterContext?
     ) {
         viewModelScope.safeLaunch(Dispatchers.Default) {
-            while (true) {
+            while (isChatAlive) {
                 val messagesResource = messagesInteractor.getMessages(CLIENT_ID, chatId, encrypter!!)
                 if (messagesResource is Resource.Success) {
+                    attemptsBeforeFailedToGetMessageLeft = STANDARD_ATTEMPTS_NUMBER
                     val messages = messagesResource.data!!
                     chatLiveData.postValue(ChatState.SuccessfullyGetMessages(messages))
                 } else {
-                    chatLiveData.postValue(ChatState.FailedToGetMessages)
+                    if (attemptsBeforeFailedToGetMessageLeft == 0) {
+                        attemptsBeforeFailedToGetMessageLeft = STANDARD_ATTEMPTS_NUMBER
+                        chatLiveData.postValue(ChatState.FailedToGetMessages)
+                    } else {
+                        --attemptsBeforeFailedToGetMessageLeft
+                    }
                 }
                 delay(PING_DELAY_MS)
             }
@@ -120,9 +132,8 @@ class ChatViewModel(
     ) {
         viewModelScope.safeLaunch(Dispatchers.IO) {
             try {
-                message.coroutineScope = this
-                val resource = messagesInteractor.downloadFile(message, pathToFolder, encrypter!!, Task(onProgressChange, this))
-                ensureActive()
+                message.task = Task(onProgressChange, false)
+                val resource = messagesInteractor.downloadFile(message, pathToFolder, encrypter!!, message.task!!)
                 if (resource is Resource.Success) {
                     chatLiveData.postValue(ChatState.SuccessfullyDownloadedFile(message))
                 } else {
@@ -141,13 +152,12 @@ class ChatViewModel(
         onProgressChange: (Double) -> Unit
     ) {
         viewModelScope.safeLaunch {
-            message.coroutineScope = this
+            message.task = Task(onProgressChange, false)
             if (Files.exists(Paths.get("${pathToFolder}${getFileName(message.devicePath)}"))) {
                 chatLiveData.postValue(ChatState.FileAlreadyDownloadedOnClick)
             } else {
-                val resource = messagesInteractor.downloadFile(message, pathToFolder, encrypter!!, Task(onProgressChange, this))
-                ensureActive()
-                if (resource is Resource.Error) {
+                val resource = messagesInteractor.downloadFile(message, pathToFolder, encrypter!!, message.task!!)
+                if (message.task?.isCancelled == true || resource is Resource.Error) {
                     chatLiveData.postValue(ChatState.FileDownloadFailedOnClick)
                 }
             }
@@ -156,12 +166,24 @@ class ChatViewModel(
 
     fun addMessagesToDataBase(
         chatId: Long,
-        message: List<Message>
+        message: List<Message>,
+        addEndChat: Boolean
     ) {
         viewModelScope.safeLaunch {
             message.forEach {
-                messagesDatabaseInteractor.addMessage(chatId, it)
+                if (addEndChat || it !is Message.ChatEnd) {
+                    messagesDatabaseInteractor.addMessage(chatId, it)
+                }
             }
+        }
+    }
+
+    fun markChatNotAlive(
+        chatId: Long
+    ) {
+        isChatAlive = false
+        viewModelScope.safeLaunch {
+            chatsDatabaseInteractor.updateAliveState(chatId, false)
         }
     }
 
@@ -174,13 +196,28 @@ class ChatViewModel(
         }
     }
 
+    fun leaveChat(
+        chatId: Long,
+        clientId: Long
+    ) {
+        viewModelScope.safeLaunch {
+            isChatAlive = false
+            chatManagerInteractor.leaveChat(clientId, chatId)
+            chatLiveData.postValue(ChatState.SuccessfullyLeavedChat)
+        }
+    }
+
     private fun CoroutineScope.safeLaunch(
         coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
         block: suspend CoroutineScope.() -> Unit
     ): Job = launch(coroutineDispatcher) {
         try {
             block()
-        } catch (err: Throwable) { /* EMPTY */ }
+        } catch (err: Throwable) { throw err } /* EMPTY */
+    }
+
+    companion object {
+        const val STANDARD_ATTEMPTS_NUMBER = 10
     }
 
 }

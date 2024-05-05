@@ -14,7 +14,7 @@ class MessagesDatabaseRepositoryImpl(
         chatId: Long,
         message: Message
     ) {
-        val entity = MessageEntity(0, chatId, Convertors().messageSerializer(message))
+        val entity = MessageEntity(0, message.time, chatId, message.type, Convertors().messageSerializer(message))
         messagesDatabase.getMessageDao().addMessage(entity)
     }
 
@@ -22,7 +22,7 @@ class MessagesDatabaseRepositoryImpl(
         chatId: Long
     ): List<Message> {
         return messagesDatabase.getMessageDao().getMessages(chatId).map {
-            Convertors().messageDeserializer(it.message)
+            Convertors().messageDeserializer(it.contentType, it.message)
         }
     }
 

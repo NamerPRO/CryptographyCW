@@ -1,6 +1,5 @@
 package ru.namerpro.nchat.domain.entities.ciphers.context
 
-import kotlinx.coroutines.ensureActive
 import ru.namerpro.nchat.domain.entities.ciphers.context.encrypter.Encrypter
 import ru.namerpro.nchat.domain.entities.ciphers.encryptionstate.EncryptionState
 import ru.namerpro.nchat.domain.entities.ciphers.mode.Mode
@@ -144,11 +143,19 @@ class SymmetricEncrypterContext(
             val buffer = ByteArray(potionSize)
             var position = 0L ; var length: Int
             while (input.read(buffer).also { length = it } > 0) {
-                task.coroutineScope.ensureActive()
+                if (task.isCancelled) {
+                    return EncryptionState.Cancelled
+                }
                 val isLast = (position + potionSize) >= size
                 val sendableBuffer = if (!isLast) buffer else buffer.take(length).toByteArray()
                 val parts = runPartialEncryption(task, position, sendableBuffer, length.toLong(), isEncrypting, isLast)
+                if (task.isCancelled) {
+                    return EncryptionState.Cancelled
+                }
                 collectPartsToEncryptedFile(task, output, parts)
+                if (task.isCancelled) {
+                    return EncryptionState.Cancelled
+                }
                 position += potionSize
                 val progressToAdd = 1.0 * PROGRESS_SECTION_THAT_TAKES_ENCRYPTION * min(length.toLong(), size) / size
                 task.progress.invoke(progressToAdd)
@@ -172,7 +179,9 @@ class SymmetricEncrypterContext(
     ) {
         var it = parts.iterator()
         while (it.hasNext()) {
-            task.coroutineScope.ensureActive()
+            if (task.isCancelled) {
+                return
+            }
             val data = it.next()
             if (data.second.isDone) {
                 val dataBuffer = data.second.get()
@@ -201,7 +210,9 @@ class SymmetricEncrypterContext(
         val parts = hashSetOf<Pair<Long, CompletableFuture<ByteArray>>>()
         val input = byteBuffer.inputStream()
         while (input.read(buffer).also { length = it } > 0) {
-            task.coroutineScope.ensureActive()
+            if (task.isCancelled) {
+                return hashSetOf()
+            }
             val data = if (!isLast || position + length + potionSize < size) {
                 val taskBuffer = buffer.clone()
                 if (isEncrypting) CompletableFuture.supplyAsync { mode!!.apply(taskBuffer, blockSize, encrypter!!) }

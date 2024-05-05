@@ -15,4 +15,6 @@ sealed class Resource<T>(
         code: Int = NetworkResponse.UNKNOWN_ERROR.code
     ) : Resource<T>(null, code)
 
+    class Cancelled<T> : Resource<T>(null, -1)
+
 }

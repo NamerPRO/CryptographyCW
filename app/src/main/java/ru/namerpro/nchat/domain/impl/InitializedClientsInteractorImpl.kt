@@ -25,4 +25,10 @@ class InitializedClientsInteractorImpl(
         return initializedClientsRepository.initialize(clientName)
     }
 
+    override suspend fun deinitialize(
+        clientId: Long
+    ): Resource<Unit> {
+        return initializedClientsRepository.deinitialize(clientId)
+    }
+
 }

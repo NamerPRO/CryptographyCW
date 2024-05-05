@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import ru.namerpro.nchat.commons.Constants.Companion.DIFFIE_HELLMAN_CONSTANT_G
 import ru.namerpro.nchat.commons.Constants.Companion.DIFFIE_HELLMAN_CONSTANT_P
 import ru.namerpro.nchat.commons.Constants.Companion.FIELD_NOT_INITIALIZED
@@ -14,13 +15,19 @@ import ru.namerpro.nchat.commons.Constants.Companion.STANDARD_AMOUNT_OF_ATTEMPTS
 import ru.namerpro.nchat.commons.Constants.Companion.STANDARD_KEY_SIZE_IN_BYTES
 import ru.namerpro.nchat.commons.SingleLiveEvent
 import ru.namerpro.nchat.domain.api.interactor.ChatManagerInteractor
+import ru.namerpro.nchat.domain.api.interactor.ChatsDatabaseInteractor
 import ru.namerpro.nchat.domain.api.interactor.InitializedClientsInteractor
+import ru.namerpro.nchat.domain.api.interactor.MessagesDatabaseInteractor
 import ru.namerpro.nchat.domain.api.interactor.SecretKeyInteractor
+import ru.namerpro.nchat.domain.model.Chat
+import ru.namerpro.nchat.domain.model.Message
 import ru.namerpro.nchat.domain.model.NetworkResponse
 import ru.namerpro.nchat.domain.model.Resource
 import ru.namerpro.nchat.domain.model.WeakChat
 
 class RootViewModel(
+    private val chatsDatabaseInteractor: ChatsDatabaseInteractor,
+    private val messagesDatabaseInteractor: MessagesDatabaseInteractor,
     private val chatManagerInteractor: ChatManagerInteractor,
     private val secretKeyInteractor: SecretKeyInteractor,
     private val initializedClientsInteractor: InitializedClientsInteractor
@@ -124,6 +131,20 @@ class RootViewModel(
         }
     }
 
+    fun leaveAllChats() {
+        runBlocking(Dispatchers.IO) {
+            READY_CHATS.forEach {
+                if (it.isAlive) {
+                    it.isAlive = false
+                    chatManagerInteractor.leaveChat(CLIENT_ID, it.id)
+                    messagesDatabaseInteractor.addMessage(it.id, Message.ChatEnd(System.currentTimeMillis()))
+                    chatsDatabaseInteractor.updateAliveState(it.id, it.isAlive)
+                }
+            }
+            initializedClientsInteractor.deinitialize(CLIENT_ID)
+        }
+    }
+
     companion object {
         var CLIENT_ID: Long = FIELD_NOT_INITIALIZED
         var CLIENT_NAME: String = ""
@@ -131,7 +152,11 @@ class RootViewModel(
         val CHAT_DATA = hashMapOf<Long, WeakChat>()
         val CLIENT_SECRET_DIFFIE_HELLMAN_CONSTANTS = hashMapOf<Long, Int>()
 
-        var DOWNLOAD_NOTINIFCTION_ID = 0
+        var DOWNLOAD_NOTIFICATION_ID = 0
+
+        val READY_CHATS = arrayListOf<Chat>()
+
+        var CAN_EXIT = true
     }
 
 }

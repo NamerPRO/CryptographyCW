@@ -13,6 +13,8 @@ import ru.namerpro.nchat.commons.Constants
 import ru.namerpro.nchat.commons.showEditableDialog
 import ru.namerpro.nchat.commons.showUnclosableDialog
 import ru.namerpro.nchat.databinding.ActivityRootBinding
+import ru.namerpro.nchat.ui.root.RootViewModel.Companion.CAN_EXIT
+import kotlin.system.exitProcess
 
 class RootActivity : AppCompatActivity() {
 
@@ -27,7 +29,7 @@ class RootActivity : AppCompatActivity() {
     ) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityRootBinding.inflate(layoutInflater, )
+        binding = ActivityRootBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.rootFragmentContainerView) as NavHostFragment
@@ -81,6 +83,15 @@ class RootActivity : AppCompatActivity() {
                 initializeClientIfNot()
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (CAN_EXIT) {
+            viewModel.leaveAllChats()
+            exitProcess(0)
+        }
+        CAN_EXIT = true
     }
 
 }

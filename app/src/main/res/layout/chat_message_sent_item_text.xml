@@ -39,7 +39,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="5dp"
             android:paddingStart="5dp"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:fontFamily="@font/montserrat_light"
             tools:text="16:51 (22.04.2024)"/>
 

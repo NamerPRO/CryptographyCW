@@ -62,4 +62,13 @@ interface NetworkClient {
         fileName: String
     ): Response
 
+    suspend fun leaveChat(
+        clientId: Long,
+        chatId: Long
+    ): Response
+
+    suspend fun deinitialize(
+        clientId: Long
+    ): Response
+
 }

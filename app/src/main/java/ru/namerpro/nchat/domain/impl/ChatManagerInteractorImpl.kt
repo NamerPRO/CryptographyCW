@@ -39,4 +39,11 @@ class ChatManagerInteractorImpl(
         )
     }
 
+    override suspend fun leaveChat(
+        clientId: Long,
+        chatId: Long
+    ): Resource<Unit> {
+        return  chatManagerRepository.leaveChat(clientId, chatId)
+    }
+
 }

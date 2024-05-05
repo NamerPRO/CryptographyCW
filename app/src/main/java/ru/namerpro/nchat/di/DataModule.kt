@@ -47,8 +47,7 @@ val dataModule = module {
 
     single<NetworkClient> {
         RetrofitNetworkClient(
-            nChatServiceApi = get(),
-            application = get()
+            nChatServiceApi = get()
         )
     }
 

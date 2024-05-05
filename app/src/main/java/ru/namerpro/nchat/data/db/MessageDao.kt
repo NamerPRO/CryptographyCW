@@ -13,7 +13,7 @@ interface MessageDao {
         message: MessageEntity
     )
 
-    @Query("SELECT * FROM messages_table WHERE chatId=:chatId")
+    @Query("SELECT * FROM messages_table WHERE chatId=:chatId ORDER BY time")
     fun getMessages(
         chatId: Long
     ): List<MessageEntity>

@@ -5,7 +5,9 @@ sealed interface EncryptionState {
     data object Success : EncryptionState
 
     data class Error(
-        val error: Throwable
+        val error: Throwable? = null
     ) : EncryptionState
+
+    data object Cancelled : EncryptionState
 
 }

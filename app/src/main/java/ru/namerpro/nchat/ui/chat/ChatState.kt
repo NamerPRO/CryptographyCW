@@ -40,4 +40,6 @@ sealed interface ChatState {
         val messages: List<Message>
     ) : ChatState
 
+    data object SuccessfullyLeavedChat : ChatState
+
 }

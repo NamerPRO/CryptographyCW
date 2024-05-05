@@ -6,6 +6,7 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ru.namerpro.nchat.R
+import kotlin.system.exitProcess
 
 fun showDialog(
     context: Context,
@@ -66,6 +67,7 @@ fun showEditableDialog(
         .setMessage(message)
         .setView(input)
         .setCancelable(false)
+        .setNeutralButton(context.getString(R.string.dialog_exit_button)) { _, _ ->  exitProcess(0) }
         .setPositiveButton(context.getString(R.string.dialog_enter_input_button)) { _, _ ->
             action.invoke(input.text.toString())
         }

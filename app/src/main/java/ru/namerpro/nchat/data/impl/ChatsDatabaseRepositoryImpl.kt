@@ -21,4 +21,11 @@ class ChatsDatabaseRepositoryImpl(
         }
     }
 
+    override suspend fun updateAliveState(
+        chatId: Long,
+        isAlive: Boolean
+    ) {
+        chatsDatabase.getChatsDao().updateAliveState(chatId, isAlive)
+    }
+
 }

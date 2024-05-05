@@ -1,9 +1,8 @@
 package ru.namerpro.nchat.ui.chat.recyclerview
 
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import ru.namerpro.nchat.databinding.ChatMessageSentLoadingBinding
+import ru.namerpro.nchat.domain.model.Task
 import kotlin.math.roundToInt
 
 class ChatMessageSentLoadingViewHolder(
@@ -12,11 +11,11 @@ class ChatMessageSentLoadingViewHolder(
 
     fun bind(
         progress: Double,
-        coroutineScope: CoroutineScope?
+        task: Task?
     ) {
         binding.sendProgress.progress = progress.roundToInt()
         binding.cancelTask.setOnClickListener {
-            coroutineScope?.cancel()
+            task?.isCancelled = true
         }
     }
 

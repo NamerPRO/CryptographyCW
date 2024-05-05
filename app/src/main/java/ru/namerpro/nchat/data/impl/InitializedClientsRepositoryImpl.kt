@@ -51,4 +51,15 @@ class InitializedClientsRepositoryImpl(
         }
     }
 
+    override suspend fun deinitialize(
+        clientId: Long
+    ): Resource<Unit> {
+        val response = networkClient.deinitialize(clientId)
+        return if (response.responseCode == SUCCESS_RESPONSE_CODE) {
+            Resource.Success()
+        } else {
+            Resource.Error()
+        }
+    }
+
 }

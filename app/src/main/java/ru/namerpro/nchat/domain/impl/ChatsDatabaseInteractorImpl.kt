@@ -18,4 +18,11 @@ class ChatsDatabaseInteractorImpl(
         return chatsDatabaseRepository.getChats()
     }
 
+    override suspend fun updateAliveState(
+        chatId: Long,
+        isAlive: Boolean
+    ) {
+        return chatsDatabaseRepository.updateAliveState(chatId, isAlive)
+    }
+
 }

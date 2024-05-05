@@ -1,8 +1,6 @@
 package ru.namerpro.nchat.data.network
 
-import android.app.Application
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import retrofit2.HttpException
@@ -13,12 +11,14 @@ import ru.namerpro.nchat.data.NetworkClient
 import ru.namerpro.nchat.data.dto.Response
 import ru.namerpro.nchat.data.dto.dto.ChatInfoDto
 import ru.namerpro.nchat.data.dto.response.CreateChatResponse
+import ru.namerpro.nchat.data.dto.response.DeinitializeResponse
 import ru.namerpro.nchat.data.dto.response.DownloadFileResponse
 import ru.namerpro.nchat.data.dto.response.GetMessageResponse
 import ru.namerpro.nchat.data.dto.response.GetPartsOfKeysResponse
 import ru.namerpro.nchat.data.dto.response.InitializeResponse
 import ru.namerpro.nchat.data.dto.response.InitializedClientsResponse
 import ru.namerpro.nchat.data.dto.response.IsClientInitializedResponse
+import ru.namerpro.nchat.data.dto.response.LeaveChatResponse
 import ru.namerpro.nchat.data.dto.response.NewChatsResponse
 import ru.namerpro.nchat.data.dto.response.SendMessageResponse
 import ru.namerpro.nchat.data.dto.response.SendPartOfKeyResponse
@@ -31,8 +31,7 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 class RetrofitNetworkClient(
-    private val nChatServiceApi: NChatServiceApi,
-    private val application: Application
+    private val nChatServiceApi: NChatServiceApi
 ) : NetworkClient {
 
     private fun handleNetworkException(
@@ -226,10 +225,13 @@ class RetrofitNetworkClient(
         message: String
     ): Response {
         return try {
-            val requestFile = CountingRequestBody(MultipartBody.FORM, file, task)// RequestBody.create(MultipartBody.FORM, file)
+            println("len = " + file.length())
+            val requestFile = CountingRequestBody(MultipartBody.FORM, file, task)
             val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-            task.coroutineScope.ensureActive()
-            nChatServiceApi.uploadFile(clientId, chatId, body, message)
+            if (task.isCancelled) {
+                return Response().apply { responseCode = NetworkResponse.CONFLICT.code }
+            }
+            nChatServiceApi.uploadFile(file.length(), clientId, chatId, body, message)
             UploadFileResponse().apply { responseCode = NetworkResponse.SUCCESS.code }
         } catch (exception: Throwable) {
             when (exception) {
@@ -251,13 +253,52 @@ class RetrofitNetworkClient(
             val listener = ResponseBodyListener {
                 it.downloadToFileWithProgress(fileName, File(pathToFolder), task)
             }
-            task.coroutineScope.ensureActive()
+            if (task.isCancelled) {
+                return Response().apply { responseCode = NetworkResponse.CONFLICT.code }
+            }
             getDownloader(listener)
                 .create(NChatServiceApi::class.java)
                 .downloadFile(fileName)
-            task.coroutineScope.ensureActive()
+            if (task.isCancelled) {
+                return Response().apply { responseCode = NetworkResponse.CONFLICT.code }
+            }
             val file = File(pathToFolder, fileName)
             DownloadFileResponse(file.inputStream(), file.length()).apply { responseCode = NetworkResponse.SUCCESS.code }
+        } catch (exception: Throwable) {
+            when (exception) {
+                is HttpException -> Response().apply { responseCode = exception.code() }
+                is ConnectException -> handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
+                is SocketTimeoutException -> handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
+                is UnknownHostException -> handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
+                else -> handleNetworkException(exception, NetworkResponse.UNKNOWN_ERROR)
+            }
+        }
+    }
+
+    override suspend fun leaveChat(
+        clientId: Long,
+        chatId: Long
+    ): Response {
+        return try {
+            nChatServiceApi.leaveChat(clientId, chatId)
+            LeaveChatResponse().apply { responseCode = NetworkResponse.SUCCESS.code }
+        } catch (exception: Throwable) {
+            when (exception) {
+                is HttpException -> Response().apply { responseCode = exception.code() }
+                is ConnectException -> handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
+                is SocketTimeoutException -> handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
+                is UnknownHostException -> handleNetworkException(exception, NetworkResponse.SERVICE_UNAVAILABLE)
+                else -> handleNetworkException(exception, NetworkResponse.UNKNOWN_ERROR)
+            }
+        }
+    }
+
+    override suspend fun deinitialize(
+        clientId: Long
+    ): Response {
+        return try {
+            nChatServiceApi.deinitialize(clientId)
+            DeinitializeResponse().apply { responseCode = NetworkResponse.SUCCESS.code }
         } catch (exception: Throwable) {
             when (exception) {
                 is HttpException -> Response().apply { responseCode = exception.code() }

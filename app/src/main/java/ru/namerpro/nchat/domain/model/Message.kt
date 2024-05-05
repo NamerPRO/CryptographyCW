@@ -5,28 +5,33 @@ import java.io.InputStream
 
 sealed class Message(
     val type: Int,
-    val isMessageReceived: Boolean
+    val isMessageReceived: Boolean,
+    val time: Long
 ) {
 
     data class Data(
         val text: String,
         val date: String,
+        val messageTime: Long,
         var isReceived: Boolean,
         val contentType: Int
-    ) : Message(contentType, isReceived)
+    ) : Message(contentType, isReceived, messageTime)
 
     data class File(
         var devicePath: String? = null,
         val realName: String,
         val date: String,
+        val messageTime: Long,
         val isReceived: Boolean,
         val contentType: Int,
         var file: Pair<Long, InputStream?>? = null,
         var progress: Double,
-        var coroutineScope: CoroutineScope? = null
-    ) : Message(contentType, isReceived)
+        var task: Task? = null
+    ) : Message(contentType, isReceived, messageTime)
 
-    data object ChatEnd : Message(MESSAGE_CONVERSATION_END_CODE, true)
+    data class ChatEnd(
+        val messageTime: Long
+    ) : Message(MESSAGE_CONVERSATION_END_CODE, true, messageTime)
 
     companion object {
         const val MESSAGE_TEXT_CODE = 0

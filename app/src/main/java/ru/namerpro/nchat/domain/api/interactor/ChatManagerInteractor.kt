@@ -16,4 +16,9 @@ interface ChatManagerInteractor {
         chatData: ChatInfo
     ): Resource<Long>
 
+    suspend fun leaveChat(
+        clientId: Long,
+        chatId: Long
+    ): Resource<Unit>
+
 }

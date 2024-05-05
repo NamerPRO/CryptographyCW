@@ -16,4 +16,10 @@ interface ChatsDao {
     @Query("SELECT * FROM chats_table")
     fun getChats(): List<ChatEntity>
 
+    @Query("UPDATE chats_table SET isAlive = :isAlive WHERE chatId = :chatId")
+    fun updateAliveState(
+        chatId: Long,
+        isAlive: Boolean
+    )
+
 }
